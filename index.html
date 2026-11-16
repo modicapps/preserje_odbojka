@@ -376,7 +376,7 @@ var SB_KEY = "sb_publishable_3LbLU_oihWbsH9R_SRg5OA_ei0ij0kI";
 (function(){
 "use strict";
 var PW_KEY = "odbojka-geslo";
-var VERSION = "S2 (aplikacija PWA)"; // ob vsaki spremembi povečaj, da vidiš, ali je objavljena nova koda
+var VERSION = "S3 (lestvica po poziciji)"; // ob vsaki spremembi povečaj, da vidiš, ali je objavljena nova koda
 var db = { players: [], matches: [], allMatches: [], drafts: [], rsvp: {}, rsvpJolly: {}, rsvpNote: {}, chat: {}, skipped: [] }, loaded = false, loadErr = "";
 var pw = null, canWrite = false, busy = false, dirty = false, showLogin = false;
 var tab = "home";
@@ -505,7 +505,7 @@ function login(p){
 function logout(){ pw = null; canWrite = false; try { sessionStorage.removeItem(PW_KEY); } catch (e) {} }
 
 /* ---------- statistika (kot Excel) ---------- */
-var fOd = "", fDo = "", sortKey = "ratio", sortDir = -1;
+var fOd = "", fDo = "", sortKey = "pos", sortDir = 1;
 var COLS = [["name","Igralec"],["sets","Total setov"],["pts","Sum vseh pik"],["won","Dobljeni seti"],["visits","Obiski"],
   ["ratio","Razmerje dob/odig"],["pos","Pozicija"],["avg","Avg / igran set"],["jolly","Jolly"],["tot","Tot + obisk"]];
 function computeStats(all){
