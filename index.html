@@ -1,1 +1,1428 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<title>Odbojka Preserje</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f2f5f2; --surface:#ffffff; --ink:#17211c; --mute:#5c6a62; --line:#d6ded8;
+  --board:#1f3a31; --board-ink:#eef3e6; --chalk:#f0dc82;
+  --acc:#2f6f57; --acc-ink:#ffffff; --soft:#e4efe8;
+  --ta:#c03d68; --ta-soft:#fbe9ef; --tb:#a86c12; --tb-soft:#f8efdd; --err:#b42318;
+  --ok:#2e8b4f; --low:#c7781a;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1512; --surface:#161f1b; --ink:#e5ece7; --mute:#93a299; --line:#2a3731;
+  --board:#14271f; --board-ink:#e9efe2; --chalk:#e8d27a;
+  --acc:#69bf98; --acc-ink:#0f1512; --soft:#1d2c25;
+  --ta:#ee86a7; --ta-soft:#2c1a21; --tb:#e2ad4d; --tb-soft:#2a2217; --err:#ff8a7a;
+  --ok:#4fc37c; --low:#e59a3c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1512; --surface:#161f1b; --ink:#e5ece7; --mute:#93a299; --line:#2a3731;
+  --board:#14271f; --board-ink:#e9efe2; --chalk:#e8d27a;
+  --acc:#69bf98; --acc-ink:#0f1512; --soft:#1d2c25;
+  --ta:#ee86a7; --ta-soft:#2c1a21; --tb:#e2ad4d; --tb-soft:#2a2217; --err:#ff8a7a;
+  --ok:#4fc37c; --low:#e59a3c; color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--f-body)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:16px;padding-right:16px}
+.top{background:var(--board);color:var(--board-ink)}
+.top .wrap{padding-block:18px 0;display:flex;flex-direction:column;gap:14px}
+.brand{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+.brand h1{font:700 30px/1 var(--f-display);letter-spacing:.04em;text-transform:uppercase;margin:0}
+.brand .sub{color:var(--chalk);font-size:14px;flex:1}
+.brand .login,.hrow2 .login{background:transparent;color:var(--board-ink);border:1px solid #ffffff44;border-radius:6px;padding:4px 10px;font:500 13px var(--f-body);cursor:pointer}
+nav{display:flex;gap:4px;overflow-x:auto}
+nav button{font:600 15px var(--f-body);background:transparent;color:var(--board-ink);opacity:.75;border:0;padding:10px 14px;border-radius:8px 8px 0 0;cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--ink);opacity:1}
+button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+main{padding-block:20px 40px;display:flex;flex-direction:column;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+h2{font:700 19px/1.2 var(--f-display);letter-spacing:.05em;text-transform:uppercase;margin:0}
+.head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.mute{color:var(--mute);font-size:13px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{font:600 12px/1.2 var(--f-body);color:var(--mute);text-transform:uppercase;letter-spacing:.04em;vertical-align:bottom;white-space:normal;min-width:56px}
+thead th button{all:unset;cursor:pointer}
+thead th:first-child{min-width:140px}
+tbody tr:hover td{background:var(--soft)}
+td.pos{text-align:center}
+.pill{display:inline-block;min-width:26px;padding:1px 7px;border-radius:999px;background:var(--soft);color:var(--acc);font-weight:600;text-align:center}
+.pill.p1{background:var(--chalk);color:#3b3110}
+tfoot td{font-weight:600;border-top:2px solid var(--ink);border-bottom:0}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mute)}
+input[type=text],input[type=password],input[type=date],input[type=number]{font:inherit;color:var(--ink);background:var(--surface);padding:6px 8px;border:1px solid var(--line);border-radius:6px}
+input[type=number]{width:62px;text-align:center;font-variant-numeric:tabular-nums}
+.btn{font:600 14px var(--f-body);background:var(--acc);color:var(--acc-ink);border:1px solid var(--acc);border-radius:7px;padding:8px 14px;cursor:pointer}
+.btn.sec{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.warn{background:var(--err);border-color:var(--err);color:#fff}
+.btn.link{background:transparent;border-color:transparent;color:var(--err);padding:4px 8px}
+.btn[disabled]{opacity:.5;cursor:default}
+.last{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:4px 14px;align-items:start}
+.last .team{display:flex;flex-direction:column;gap:2px;min-width:0}
+.last .team.b{text-align:right}
+.last .tname{font:700 22px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.04em}
+.last .names{font-size:13px;color:var(--mute)}
+.last .score{text-align:center;font:700 40px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.last .sets{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;font-variant-numeric:tabular-nums}
+.last .sets span{border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:14px}
+.tA{color:var(--ta)} .tB{color:var(--tb)}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px}
+.p{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:7px;padding:4px 6px;min-width:0}
+.p.A{background:var(--ta-soft);border-color:var(--ta)} .p.B{background:var(--tb-soft);border-color:var(--tb)}
+.p .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seg{display:flex}
+.seg button{font:600 13px var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:3px 0;width:30px;cursor:pointer}
+.seg button:first-child{border-radius:5px 0 0 5px}.seg button:last-child{border-radius:0 5px 5px 0}
+.seg button.onA{background:var(--ta);border-color:var(--ta);color:#fff}
+.seg button.onB{background:var(--tb);border-color:var(--tb);color:#fff}
+.seg button.onP{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.p.P{background:var(--soft);border-color:var(--acc)}
+.teams .P{background:var(--soft)}
+select{font:inherit;color:var(--ink);background:var(--surface);padding:6px 8px;border:1px solid var(--line);border-radius:6px;max-width:100%}
+.meter{display:inline-block;vertical-align:middle;width:60px;height:8px;border-radius:4px;background:var(--soft);margin-left:8px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--acc)}
+.hint{font-size:13px;color:var(--mute);margin:10px 0 0}
+.suggest{border:1px solid var(--acc);background:var(--soft);border-radius:8px;padding:8px 10px;font-size:14px;margin-top:10px}
+.jolly{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:2px}
+.teams{display:grid;gap:6px;margin-top:12px}
+.teams div{border-radius:7px;padding:8px 10px;font-size:14px}
+.teams .A{background:var(--ta-soft)} .teams .B{background:var(--tb-soft)}
+.setsT td,.setsT th{text-align:center}
+.result{font:700 34px/1 var(--f-display);text-align:center;margin:12px 0;font-variant-numeric:tabular-nums;min-height:34px}
+.match{display:flex;flex-direction:column;gap:4px;padding-block:12px;border-top:1px solid var(--line)}
+.match:first-child{border-top:0;padding-top:0}
+.notice{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--mute)}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--chalk);color:#3b3110;border-radius:8px;padding:10px 12px}
+.toast{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:7px;font-size:14px;max-width:calc(100% - 32px);opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.err{background:var(--err);color:#fff}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+/* ---------- prisotnost ---------- */
+.termini{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 13px var(--f-body);cursor:pointer;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .c{font-weight:500;opacity:.75;margin-left:4px}
+.chip.off{text-decoration:line-through;opacity:.6}
+.when{font:700 24px/1.15 var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.meter12{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 18px;margin-top:10px}
+.gnum{font:700 52px/0.9 var(--f-display);font-variant-numeric:tabular-nums}
+.gnum small{font-size:22px;color:var(--mute)}
+.gauge{flex:1 1 260px;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:4px}
+.gauge i{height:26px;border-radius:4px;background:var(--soft);border:1px solid var(--line)}
+.gauge i.da{background:var(--low);border-color:var(--low)}
+.gauge.ok i.da{background:var(--ok);border-color:var(--ok)}
+.gauge i.mog{background:repeating-linear-gradient(45deg,var(--soft) 0 4px,var(--line) 4px 8px)}
+.gauge i.cap{box-shadow:3px 0 0 var(--ink)}
+.status{font-weight:600;margin-top:8px}
+.status.ok{color:var(--ok)} .status.low{color:var(--low)}
+.legend{font-size:12px;color:var(--mute);margin:0 0 8px}
+.rsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.rs{display:flex;flex-direction:column;gap:4px;border:1px solid var(--line);border-radius:8px;padding:5px 6px;min-width:0}
+.rs.st-DA{border-color:var(--ok)} .rs.st-NE{opacity:.7} .rs.st-MOGOCE{border-color:var(--low)}
+.rs.me{box-shadow:0 0 0 2px var(--ink) inset}
+.rs .n{font-size:13px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rsb{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.rsb button{font:700 14px/1 var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 0;cursor:pointer}
+.rsb button + button{border-left:0}
+.rsb button:first-child{border-radius:5px 0 0 5px}.rsb button:last-child{border-radius:0 5px 5px 0}
+.rsb button.on-DA{background:var(--ok);border-color:var(--ok);color:#fff}
+.rsb button.on-MOGOCE{background:var(--low);border-color:var(--low);color:#fff}
+.rsb button.on-NE{background:var(--err);border-color:var(--err);color:#fff}
+.rsb button.on-J{background:var(--chalk);border-color:var(--chalk);color:#3b3110}
+.rs .note{font-size:11.5px;font-style:italic;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:-2px}
+.notebox{margin:0 0 10px} .notebox .row{flex-wrap:nowrap} .notebox input{flex:1;min-width:0}
+.prisgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:16px;align-items:start}
+.pcol{display:flex;flex-direction:column;gap:16px;min-width:0}
+.chatcol{position:sticky;top:12px}
+.msgs{display:flex;flex-direction:column;gap:8px;max-height:min(60vh,520px);overflow-y:auto;padding:2px 2px 6px}
+.msg{background:var(--soft);border-radius:10px 10px 10px 2px;padding:6px 9px;max-width:92%;align-self:flex-start}
+.msg.mine{background:var(--ta-soft);border-radius:10px 10px 2px 10px;align-self:flex-end}
+.msg .mh{display:flex;align-items:center;gap:6px;font-size:12px}
+.msg .mh span{color:var(--mute)} .msg .mh .btn{padding:0 4px;margin-left:auto;font-size:12px}
+.msg .mt{font-size:14px;overflow-wrap:anywhere}
+.composer{display:flex;flex-direction:column;gap:6px;margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.composer .row{flex-wrap:nowrap} .composer input{flex:1;min-width:0}
+.qbtn{width:28px;height:28px;border-radius:50%;border:1px solid #ffffff66;background:transparent;color:var(--board-ink);font:600 15px/1 var(--f-body);cursor:pointer;flex:none}
+.qbtn.qinline{width:22px;height:22px;font-size:12px;border-color:currentColor;color:inherit;vertical-align:middle}
+.banner{background:var(--chalk);color:#3b3110;border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:10px;line-height:1.5}
+.banner .bh{display:flex;justify-content:space-between;align-items:center}
+.banner .btn.link{color:#3b3110;padding:2px 6px}
+.banner .bok{font-weight:700;padding-left:0!important;margin-top:4px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.sheet{background:var(--surface);color:var(--ink);border-radius:14px;padding:16px 18px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;font-size:14px;line-height:1.5}
+.sheet section{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.sheet h3{font:700 16px var(--f-display);text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px}
+.sheet ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.sheet .hl{color:var(--mute);margin-top:2px}
+.sheet .okline{background:var(--soft);color:var(--ok);border-radius:6px;padding:6px 9px;margin:8px 0 4px;font-weight:600}
+.sheet dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0}
+.sheet dt{font-weight:600;white-space:nowrap} .sheet dd{margin:0;color:var(--mute)}
+@media (max-width:640px){ .modal{align-items:flex-end;padding:0} .sheet{border-radius:14px 14px 0 0;max-height:85vh} .sheet dl{grid-template-columns:1fr} .sheet dd{margin-bottom:4px} }
+.homegrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){ .homegrid{grid-template-columns:minmax(0,1fr)} }
+.hcard{display:flex;flex-direction:column;gap:6px}
+.lb{font:600 11.5px var(--f-body);letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.hrow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hbig{font:700 20px/1.1 var(--f-display);letter-spacing:.02em}
+.hnum{font:700 30px/1 var(--f-display);font-variant-numeric:tabular-nums} .hnum small{font-size:16px;color:var(--mute)}
+.gauge.mini{flex:none;margin:2px 0 4px} .gauge.mini i{height:14px}
+.hres{font:700 20px var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.hscore{font-size:34px;color:var(--ink);font-variant-numeric:tabular-nums}
+.hlink{color:var(--acc)!important;align-self:flex-start;padding:4px 0!important}
+.fun{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.fun > div{background:var(--soft);border-radius:8px;padding:9px 11px}
+.fun .t{font-size:12px;color:var(--mute);display:flex;gap:6px;align-items:center}
+.fun .v{font-weight:600;margin-top:3px;line-height:1.3}
+.fun .s{font-size:12.5px;color:var(--mute)}
+@media (max-width:640px){ .hbig{font-size:18px}
+  .fun{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+  .fun > div{flex:0 0 72%;scroll-snap-align:start} }
+.offbar{background:var(--tb-soft);color:var(--err);border:1px solid var(--err);border-radius:8px;padding:8px 12px;margin:0 0 12px;font-weight:600}
+.mystat .rsb{display:inline-grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.mystat .rsb button{min-width:44px;height:36px}
+.wg{font-size:13.5px;line-height:1.4} .wg b{margin-right:4px} .wg.none{color:var(--mute)}
+.form{display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px}
+.form i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.form .fW{background:var(--ok)} .form .fL{background:var(--err)} .form .fD{background:var(--mute)}
+.bars{display:flex;align-items:flex-end;gap:3px;height:52px;margin:2px 0 0;position:relative;padding-bottom:16px}
+.bars::after{content:"";position:absolute;left:0;right:0;border-top:1px dashed var(--mute);bottom:calc(16px + (100% - 16px) * var(--t));pointer-events:none}
+.bc{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;position:relative}
+.bc i{display:block;width:100%;background:var(--low);border-radius:3px 3px 0 0;min-height:2px} .bc i.ok{background:var(--ok)}
+.bc .bn{display:none} .bc .bd{position:absolute;bottom:-16px;font-size:9.5px;color:var(--mute);white-space:nowrap}
+.hbtns{display:inline-flex;align-items:center;gap:8px;margin-left:auto}
+.brand{flex-wrap:nowrap!important;align-items:center!important}
+.brand h1{min-width:0}
+.hrow2{display:flex;align-items:center;gap:10px;min-height:0}
+.hrow2:empty{display:none}
+.hrow2 .chatflag-row{flex:1 1 auto;flex-basis:auto}
+.hrow2 .login{margin-left:auto}
+@media (max-width:640px){ .top .wrap{gap:10px} .brand h1{font-size:22px!important} .mebtn{max-width:120px} }
+.mebtn{background:#ffffff1a;color:var(--board-ink);border:1px solid #ffffff44;border-radius:999px;padding:4px 11px;font:600 13px var(--f-body);cursor:pointer;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mebtn.go{background:var(--chalk);color:#3b3110;border-color:var(--chalk)}
+.meunk{font-size:13px;opacity:.75}
+.wholist{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+.wholist .btn{text-align:left;padding:10px 12px} .wholist .btn.on{border-color:var(--acc);background:var(--soft)}
+.ptab .pn input{width:min(260px,100%)}
+.mob-txt{display:none}
+@media (max-width:640px){
+  .desk-txt{display:none} .mob-txt{display:inline}
+  .ptab, .ptab tbody{display:block}
+  .ptab tr{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);padding:4px 0}
+  .ptab td{border:0;padding:2px}
+  .ptab td.pn{flex:1;min-width:0} .ptab .pn input{width:100%}
+  .ptab input[type=checkbox]{width:20px;height:20px}
+  .ptab .plink{padding:7px 10px}
+}
+.chbox{border:1px dashed var(--acc);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.chrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chn{color:var(--mute);font-style:italic;font-size:.92em}
+.chline{font-size:13px;color:var(--acc);margin-top:2px}
+.logT td{white-space:normal;text-align:left} .logT td:first-child{white-space:nowrap;font-variant-numeric:tabular-nums}
+.byother{color:var(--low);font-weight:600;font-size:12.5px}
+.lgter{margin-top:14px} .lgter h3{font:700 15px var(--f-display);text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px}
+.lgp{border:1px solid var(--line);border-radius:8px;margin-bottom:6px;padding:0 10px}
+.lgp summary{display:flex;gap:8px;align-items:center;padding:9px 0;cursor:pointer;list-style:none}
+.lgp summary::-webkit-details-marker{display:none}
+.lgp summary b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lgp .now{font-size:12px;background:var(--soft);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.lgp ol{margin:0 0 8px;padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:3px}
+.sheet.confirm{max-width:380px;text-align:center}
+.sheet.confirm h2{margin-bottom:8px}
+.cbody{font-size:15px} .cbody .who{margin:10px 0 0;font-size:14px;color:var(--mute)} .cbody .who b{color:var(--ink)}
+.cbody .warnline{display:inline-block;color:var(--low);font-weight:600;margin-bottom:4px}
+.cbtns{justify-content:center;margin-top:14px} .cbtns .btn{flex:1}
+@media (max-width:640px){ .modal .sheet.confirm{border-radius:14px 14px 0 0;max-width:none} }
+.morebtn,.chatflag-row{display:none}
+.chatflag-row{flex-basis:100%}
+.chatflag{display:inline-flex;align-items:center;gap:8px;background:var(--chalk);color:#3b3110;border:0;border-radius:999px;padding:5px 12px 5px 5px;font:600 13px var(--f-body);cursor:pointer}
+.chatflag .bang{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--err);color:#fff;font:700 14px/1 var(--f-display)}
+.nochat{font-size:13px;opacity:.7}
+@media (max-width:640px){
+  .morebtn{display:inline-block;background:transparent;border-style:dashed}
+  .termini:not(.open) .chip.more{display:none}
+  .chatflag-row{display:block}
+}
+@media (max-width:820px){ .prisgrid{grid-template-columns:minmax(0,1fr)} .chatcol{position:static} .msgs{max-height:340px} }
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:14px}
+.groups div{font-size:14px}
+.groups b{display:block;font:700 15px var(--f-display);text-transform:uppercase;letter-spacing:.04em}
+/* ---------- telefon ---------- */
+.mobile{display:none}
+.cards{display:flex;flex-direction:column}
+.card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.card:last-child{border-bottom:0}
+.card .nm{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .big{font:700 24px/1 var(--f-display);text-align:right;font-variant-numeric:tabular-nums}
+.card .big small{display:block;font:500 10px/1.3 var(--f-body);color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+.card .det{grid-column:2/4;font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
+.sum{font-size:13px;color:var(--mute);border-top:2px solid var(--ink);padding-top:8px;margin-top:4px}
+@media (max-width:640px){
+  .desk{display:none}
+  .mobile{display:block}
+  .brand h1{font-size:24px}
+  .panel{padding:12px}
+  main{gap:12px;padding-block:14px 32px}
+  nav button{padding:10px 11px;font-size:14px}
+  .seg button{width:38px;padding:7px 0;font-size:14px}
+  .jolly{font-size:14px;gap:4px}
+  .jolly input{width:20px;height:20px}
+  .plist{grid-template-columns:minmax(0,1fr)}
+  .p{padding:6px 8px}
+  input[type=number]{width:72px;padding:10px 4px;font-size:18px}
+  input[type=text],input[type=password],input[type=date],select{font-size:16px;padding:9px 10px}
+  .btn{padding:11px 16px;font-size:15px}
+  .last .tname{font-size:18px}
+  .last .score{font-size:32px}
+  .head .row{width:100%}
+  .head .row label.f{flex:1}
+  .rsgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .rs .n{font-size:12.5px}
+  .rsb button{padding:8px 0;font-size:14px}
+  .gnum{font-size:44px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast" role="status"></div>
+<script>
+/* Povezava s Supabase. Zamenjaj oba podatka (Supabase -> Project Settings -> API); anon ključ je javen in je tak namenjen. */
+var SB_URL = "https://buclbyhlozjhdrxljekn.supabase.co/rest/v1/";
+var SB_KEY = "sb_secret_eA0OvhGb4kVf9vdBRITtUQ_F5ZRhP3W";
+/* Spodaj je tanka plast, ki klice iz aplikacije (nekdanji google.script.run) pošilja v Supabase. Ostala koda je enaka kot pri Googlu. */
+(function(){
+  function names(v){ return String(v || "").split(",").map(function(s){ return s.trim(); }).filter(Boolean); }
+  function sets(v){ return String(v || "").split(",").map(function(s){ return s.trim(); }).filter(Boolean).map(function(s){ return s.split(":").map(function(x){ return Number(x.trim()) || 0; }); }); }
+  function shape(d){
+    var rsvp = {}, rj = {}, rn = {}, chat = {};
+    (d.rsvp || []).forEach(function(r){
+      (rsvp[r.d] = rsvp[r.d] || {})[r.n] = r.o;
+      if (r.o === "DA" && r.j) (rj[r.d] = rj[r.d] || {})[r.n] = true;
+      if (r.note) (rn[r.d] = rn[r.d] || {})[r.n] = r.note;
+    });
+    (d.chat || []).forEach(function(c){ (chat[c.d] = chat[c.d] || []).push({ id: c.id, name: c.name, text: c.text, time: c.time }); });
+    return { players: d.players, rsvp: rsvp, rsvpJolly: rj, rsvpNote: rn, chat: chat, skipped: d.skipped || [], today: d.today,
+      url: location.origin + location.pathname,
+      matches: d.matches.map(function(m){ return { id: m.id, date: m.date, teamA: m.teamA, teamB: m.teamB, a: names(m.a), b: names(m.b), jolly: names(m.jolly), sets: sets(m.sets), ch: String(m.ch || "").trim() }; }) };
+  }
+  function matchRow(m){
+    return { id: m.id || "", date: m.date, teamA: m.teamA, teamB: m.teamB, a: m.a.join(", "), b: m.b.join(", "), jolly: (m.jolly || []).join(", "),
+      sets: m.sets.map(function(s){ return s[0] + ":" + s[1]; }).join(", "), ch: m.ch || "" };
+  }
+  var API = {
+    getData:       ["get_data", [], shape],
+    getLog:        ["get_log", ["p_pw"]],
+    checkPassword: ["check_password", ["p_pw"]],
+    setRsvp:       ["set_rsvp", ["p_datum", "p_ime", "p_odgovor", "p_jolly", "p_by"], shape],
+    setNote:       ["set_note", ["p_datum", "p_ime", "p_note", "p_by"], shape],
+    addChat:       ["add_chat", ["p_datum", "p_ime", "p_text"], shape],
+    deleteChat:    ["delete_chat", ["p_pw", "p_id"], shape],
+    setSkip:       ["set_skip", ["p_pw", "p_datum", "p_skip", "p_note"], shape],
+    saveMatch:     ["save_match", ["p_pw", "m"], shape, function(a){ a[1] = matchRow(a[1]); return a; }],
+    deleteMatch:   ["delete_match", ["p_pw", "p_id"], shape],
+    savePlayers:   ["save_players", ["p_pw", "p_players", "p_renames"], shape]
+  };
+  function rpc(fn, args){
+    var d = API[fn]; if (!d) return Promise.reject(new Error("Neznana funkcija " + fn));
+    var a = (d[3] ? d[3](args.slice()) : args), body = {};
+    d[1].forEach(function(k, i){ body[k] = a[i] === undefined ? null : a[i]; });
+    return fetch(SB_URL + "/rest/v1/rpc/" + d[0], { method: "POST", headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .catch(function(){ throw new Error("Ni povezave s strežnikom. Poskusi znova."); })
+      .then(function(r){ return r.json().catch(function(){ return null; }).then(function(j){
+        if (!r.ok) throw new Error((j && j.message) || "Napaka strežnika (" + r.status + ").");
+        return d[2] ? d[2](j) : j; }); });
+  }
+  window.google = { script: {
+    get run(){
+      var ok = function(){}, fail = function(){};
+      var p = new Proxy({}, { get: function(t, k){
+        if (k === "withSuccessHandler") return function(f){ ok = f; return p; };
+        if (k === "withFailureHandler") return function(f){ fail = f; return p; };
+        return function(){ rpc(k, [].slice.call(arguments)).then(function(v){ ok(v); }, function(e){ fail(e); }); };
+      } });
+      return p;
+    },
+    url: { getLocation: function(cb){ var o = {}; new URLSearchParams(location.search).forEach(function(v, k){ o[k] = v; }); cb({ parameter: o, hash: location.hash.replace(/^#/, "") }); } },
+    history: { replace: function(state, params, hash){ var q = new URLSearchParams(params || {}).toString(); history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + (hash ? "#" + hash : "")); } }
+  } };
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var PW_KEY = "odbojka-geslo";
+var VERSION = "S1 (Supabase)"; // ob vsaki spremembi povečaj, da vidiš, ali je objavljena nova koda
+var db = { players: [], matches: [], allMatches: [], drafts: [], rsvp: {}, rsvpJolly: {}, rsvpNote: {}, chat: {}, skipped: [] }, loaded = false, loadErr = "";
+var pw = null, canWrite = false, busy = false, dirty = false, showLogin = false;
+var tab = "home";
+try { pw = sessionStorage.getItem(PW_KEY); } catch (e) {}
 
+/* ---------- pomožne ---------- */
+function $(s){ return document.querySelector(s); }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+function fmt(x,d){ return x.toFixed(d).replace(".", ","); }
+function dateSl(d){ var p = d.split("-"); return p.length === 3 ? +p[2] + ". " + +p[1] + ". " + p[0] : d; }
+function byName(a,b){ return a.name.localeCompare(b.name, "sl"); }
+function today(){ var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+var toastT;
+function toast(t, err){ var e = $("#toast"); e.textContent = t; e.className = "toast show" + (err ? " err" : ""); clearTimeout(toastT); toastT = setTimeout(function(){ e.className = "toast" + (err ? " err" : ""); }, 2800); }
+function validSets(m){ return m.sets.filter(function(s){ return (+s[0]||0) + (+s[1]||0) > 0 && +s[0] !== +s[1]; }); }
+function errMsg(e){ return (e && e.message ? e.message : String(e)).replace(/^Error:\s*/, ""); }
+
+/* ---------- strežnik ---------- */
+function fromServer(d){
+  db.players = d.players.map(function(p){ return { name: p.name, active: p.active, orig: p.name }; });
+  db.allMatches = d.matches.map(function(m){
+    var pl = {};
+    m.a.forEach(function(n){ pl[n] = { t: "A", j: false }; });
+    m.b.forEach(function(n){ pl[n] = { t: "B", j: false }; });
+    m.jolly.forEach(function(n){ if (pl[n]) pl[n].j = true; });
+    parseCh(m.ch, pl);
+    return { id: m.id, date: m.date, teamA: m.teamA, teamB: m.teamB, players: pl, sets: m.sets };
+  });
+  // Statistika, lestvica in aktualni termin upoštevajo samo odigrane tekme (z vsaj enim setom).
+  // Tekma brez setov = shranjene ekipe, rezultat bo vpisan kasneje.
+  db.matches = db.allMatches.filter(function(m){ return validSets(m).length; });
+  db.drafts = db.allMatches.filter(function(m){ return !validSets(m).length; });
+  db.rsvp = d.rsvp || {};
+  db.skipped = d.skipped || [];
+  db.rsvpJolly = d.rsvpJolly || {};
+  db.rsvpNote = d.rsvpNote || {};
+  db.chat = d.chat || {};
+  db.url = d.url || "";
+  db.today = d.today || today();
+  loaded = true; dirty = false;
+}
+function toServer(m){
+  var a = [], b = [], j = [];
+  Object.keys(m.players).forEach(function(n){ var i = m.players[n]; (i.t === "A" ? a : b).push(n); if (i.j) j.push(n); });
+  return { id: m.id || "", date: m.date, teamA: m.teamA, teamB: m.teamB, a: a, b: b, jolly: j, sets: m.sets, ch: serCh(m.players) };
+}
+
+/* ---------- menjave med tekmo ----------
+   Vsak igralec ima začetno ekipo t ("A"/"B"), po želji from = prvi set, ki ga je igral (kasnejši prihod),
+   in mv = [{s: set, t: ekipa}] = od seta s naprej igra v ekipi t (zamenjava ali premik).
+   Zapis v tabeli: "Riči>B@3; Blaž>A@3; Tim+@2". */
+function parseCh(str, pl){
+  String(str || "").split(";").map(function(x){ return x.trim(); }).filter(Boolean).forEach(function(x){
+    var a = /^(.*?)>([AB])@(\d+)$/.exec(x), b = /^(.*?)\+@(\d+)$/.exec(x);
+    if (a && pl[a[1]]) (pl[a[1]].mv = pl[a[1]].mv || []).push({ s: +a[3], t: a[2] });
+    else if (b && pl[b[1]]) pl[b[1]].from = +b[2];
+  });
+  Object.keys(pl).forEach(function(n){ if (pl[n].mv) pl[n].mv.sort(function(x,y){ return x.s - y.s; }); });
+}
+function serCh(pl){
+  var out = [];
+  Object.keys(pl).forEach(function(n){
+    var i = pl[n]; if (i.t !== "A" && i.t !== "B") return;
+    if (i.from > 1) out.push(n + "+@" + i.from);
+    (i.mv || []).forEach(function(v){ out.push(n + ">" + v.t + "@" + v.s); });
+  });
+  return out.join("; ");
+}
+// Ekipa igralca v setu z indeksom i (0 = prvi set); "" = v tem setu ni igral.
+function teamAt(info, i){
+  var s = i + 1; if (info.from && s < info.from) return "";
+  var t = info.t; (info.mv || []).forEach(function(v){ if (s >= v.s) t = v.t; });
+  return t === "A" || t === "B" ? t : "";
+}
+function otherT(t){ return t === "A" ? "B" : "A"; }
+// Kratek opis menjav igralca, npr. "od 2. seta" ali "→ Suhi od 3. seta".
+function chNote(m, n){
+  var i = m.players[n], parts = [];
+  if (i.from > 1) parts.push("od " + i.from + ". seta");
+  (i.mv || []).forEach(function(v){ parts.push("→ " + (v.t === "A" ? m.teamA : m.teamB) + " od " + v.s + ". seta"); });
+  return parts.join(", ");
+}
+// Seznam menjav tekme za prikaz; zamenjavi v istem setu v nasprotni smeri združi v "A ↔ B".
+function chList(m){
+  var mv = [], out = [];
+  Object.keys(m.players).forEach(function(n){ var i = m.players[n];
+    if (i.from > 1) out.push({ s: i.from, txt: esc(n) + " pride od " + i.from + ". seta", n: n, kind: "from" });
+    (i.mv || []).forEach(function(v){ mv.push({ n: n, s: v.s, t: v.t }); }); });
+  var used = {};
+  mv.forEach(function(a, x){ if (used[x]) return;
+    var y = mv.findIndex(function(b, k){ return !used[k] && k !== x && b.s === a.s && b.t === otherT(a.t); });
+    if (y >= 0) { used[x] = used[y] = 1; out.push({ s: a.s, txt: esc(a.n) + " ↔ " + esc(mv[y].n) + " od " + a.s + ". seta", n: a.n, n2: mv[y].n, kind: "swap" }); }
+    else { used[x] = 1; out.push({ s: a.s, txt: esc(a.n) + " → " + esc(a.t === "A" ? m.teamA : m.teamB) + " od " + a.s + ". seta", n: a.n, kind: "move" }); }
+  });
+  return out.sort(function(a,b){ return a.s - b.s; });
+}
+function call(fn, args, okMsg, nextTab){
+  busy = true; render();
+  var r = google.script.run
+    .withSuccessHandler(function(d){
+      busy = false; fromServer(d);
+      if (fn === "saveMatch" || fn === "deleteMatch" || form.auto) newForm();   // nov aktualni termin + njegove prijave
+      if (nextTab) tab = nextTab; toast(okMsg); render();
+    })
+    .withFailureHandler(function(e){
+      busy = false; var m = errMsg(e);
+      if (/geslo/i.test(m)) logout();
+      toast(m || "Shranjevanje ni uspelo. Poskusi znova.", true); render();
+    });
+  r[fn].apply(r, args);
+}
+function load(){
+  google.script.run
+    .withSuccessHandler(function(d){ fromServer(d); if (!form.id) newForm(); render(); })
+    .withFailureHandler(function(e){ if (!loaded) loadErr = errMsg(e); render(); })
+    .getData();
+}
+function login(p){
+  google.script.run.withSuccessHandler(function(ok){
+    if (!ok) { toast("Napačno geslo.", true); return; }
+    pw = p; canWrite = true; showLogin = false;
+    try { sessionStorage.setItem(PW_KEY, p); } catch (e) {}
+    toast("Prijavljen za vnos"); render();
+  }).withFailureHandler(function(e){ toast(errMsg(e), true); }).checkPassword(p);
+}
+function logout(){ pw = null; canWrite = false; try { sessionStorage.removeItem(PW_KEY); } catch (e) {} }
+
+/* ---------- statistika (kot Excel) ---------- */
+var fOd = "", fDo = "", sortKey = "ratio", sortDir = -1;
+var COLS = [["name","Igralec"],["sets","Total setov"],["pts","Sum vseh pik"],["won","Dobljeni seti"],["visits","Obiski"],
+  ["ratio","Razmerje dob/odig"],["pos","Pozicija"],["avg","Avg / igran set"],["jolly","Jolly"],["tot","Tot + obisk"]];
+function computeStats(all){
+  var st = {};
+  var phone = all || (window.matchMedia && window.matchMedia("(max-width: 640px)").matches); // na telefonu (in na Domov) vedno vse tekme
+  var od = phone ? "" : fOd, dDo = phone ? "" : fDo;
+  db.matches.filter(function(m){ return (!od || m.date >= od) && (!dDo || m.date <= dDo); }).forEach(function(m){
+    var sets = validSets(m);
+    Object.keys(m.players).forEach(function(n){
+      var info = m.players[n];
+      var s = st[n] || (st[n] = { name: n, sets: 0, pts: 0, won: 0, dates: {}, jolly: 0 });
+      s.dates[m.date] = 1; if (info.j) s.jolly++;
+      sets.forEach(function(x, i){   // vsak set šteje v ekipo, v kateri je igralec takrat igral
+        var t = teamAt(info, i); if (!t) return;
+        var mine = t === "A" ? 0 : 1;
+        s.sets++; s.pts += +x[mine]; if (+x[mine] > +x[1-mine]) s.won++;
+      });
+    });
+  });
+  var rows = Object.keys(st).map(function(k){
+    var s = st[k], v = Object.keys(s.dates).length;
+    return { name: s.name, sets: s.sets, pts: s.pts, won: s.won, visits: v, ratio: s.sets ? s.won/s.sets : 0,
+      avg: s.sets ? s.pts/s.sets : 0, jolly: s.jolly, tot: s.won + v };
+  });
+  var wonVals = rows.map(function(r){ return r.won; }).filter(function(v,i,a){ return a.indexOf(v) === i; }).sort(function(a,b){ return b-a; });
+  rows.forEach(function(r){ r.pos = wonVals.indexOf(r.won) + 1; });
+  return rows.sort(function(a,b){
+    if (sortKey === "name") return sortDir * byName(a,b);
+    return sortDir * (a[sortKey] - b[sortKey]) || (b.ratio - a.ratio) || (b.won - a.won) || byName(a,b);
+  });
+}
+function teamList(m, t, withJ){
+  return Object.keys(m.players).filter(function(n){ return m.players[n].t === t; })
+    .map(function(n){ var cn = chNote(m, n);
+      return esc(n) + (withJ && m.players[n].j ? " (J)" : "") + (cn ? ' <i class="chn">(' + esc(cn) + ")</i>" : ""); }).join(", ");
+}
+function lastMatchHTML(){
+  var m = db.matches[db.matches.length - 1]; if (!m) return "";
+  var wa = m.sets.filter(function(s){ return s[0] > s[1]; }).length, wb = m.sets.length - wa;
+  var sa = m.sets.reduce(function(t,s){ return t + s[0]; }, 0), sb = m.sets.reduce(function(t,s){ return t + s[1]; }, 0);
+  return '<section class="panel"><div class="head"><h2>Zadnji krog</h2><span class="mute">' + dateSl(m.date) + '</span></div>'
+    + '<div class="last"><div class="team"><span class="tname tA">' + esc(m.teamA) + '</span><span class="names">' + teamList(m,"A") + '</span></div>'
+    + '<div class="score"><span class="tA">' + wa + '</span> : <span class="tB">' + wb + '</span></div>'
+    + '<div class="team b"><span class="tname tB">' + esc(m.teamB) + '</span><span class="names">' + teamList(m,"B") + '</span></div>'
+    + '<div class="sets">' + m.sets.map(function(s){ return "<span>" + s[0] + " : " + s[1] + "</span>"; }).join("") + '<span><b>Σ ' + sa + " : " + sb + '</b></span></div></div></section>';
+}
+function statCardsHTML(rows, T){
+  var k = sortKey === "name" || sortKey === "pos" ? "tot" : sortKey;
+  var label = COLS.filter(function(c){ return c[0] === k; })[0][1];
+  var val = function(r){ return k === "ratio" ? fmt(r.ratio,3) : k === "avg" ? fmt(r.avg,2) : r[k]; };
+  return '<div class="mobile"><label class="f" style="margin-bottom:6px">Razvrsti po<select id="sortSel">'
+    + COLS.map(function(c){ return '<option value="' + c[0] + '"' + (c[0] === sortKey ? " selected" : "") + ">" + c[1] + "</option>"; }).join("") + "</select></label>"
+    + '<div class="cards">' + (rows.length ? rows.map(function(r){
+        return '<div class="card"><span class="pill' + (r.pos === 1 ? " p1" : "") + '" title="Pozicija">' + r.pos + '</span><span class="nm">' + esc(r.name) + "</span>"
+          + '<span class="big">' + val(r) + "<small>" + label + "</small></span>"
+          + '<span class="det">' + r.sets + " setov · " + r.won + " dobljenih (" + fmt(r.ratio,3) + ") · " + r.visits + " obiskov · avg " + fmt(r.avg,2)
+          + (r.jolly ? " · J " + r.jolly : "") + " · Tot " + r.tot + "</span></div>";
+      }).join("") : '<p class="mute">V izbranem obdobju ni tekem.</p>') + "</div>"
+    + '<div class="sum">Skupaj: ' + T.sets + " setov · " + T.pts + " pik · " + T.visits + " obiskov · Tot " + T.tot + "</div></div>";
+}
+function statHTML(){
+  var rows = computeStats();
+  var T = rows.reduce(function(t,r){ ["sets","pts","won","visits","jolly","tot"].forEach(function(k){ t[k] += r[k]; }); return t; }, {sets:0,pts:0,won:0,visits:0,jolly:0,tot:0});
+  var body = rows.length ? rows.map(function(r){
+    return "<tr><td>" + esc(r.name) + "</td><td>" + r.sets + "</td><td>" + r.pts + "</td><td>" + r.won + "</td><td>" + r.visits + "</td><td>" + fmt(r.ratio,3)
+      + '</td><td class="pos"><span class="pill' + (r.pos === 1 ? " p1" : "") + '">' + r.pos + "</span></td><td>" + fmt(r.avg,2) + "</td><td>" + (r.jolly || "") + "</td><td><b>" + r.tot + "</b></td></tr>";
+  }).join("") : '<tr><td colspan="10" class="mute">V izbranem obdobju ni tekem.</td></tr>';
+  return lastMatchHTML() + '<section class="panel"><div class="head"><h2>Lestvica</h2><div class="row desk">'
+    + '<label class="f">Od<input type="date" id="fOd" value="' + fOd + '"></label><label class="f">Do<input type="date" id="fDo" value="' + fDo + '"></label>'
+    + '<button class="btn sec" data-act="fclr">Vse tekme</button></div></div>'
+    + statCardsHTML(rows, T)
+    + '<div class="scroll desk"><table><thead><tr>' + COLS.map(function(c){ return '<th><button data-sort="' + c[0] + '">' + c[1] + (c[0] === sortKey ? (sortDir < 0 ? " ▼" : " ▲") : "") + "</button></th>"; }).join("")
+    + "</tr></thead><tbody>" + body + "</tbody><tfoot><tr><td>Skupaj</td><td>" + T.sets + "</td><td>" + T.pts + "</td><td>" + T.won + "</td><td>" + T.visits + "</td><td>"
+    + (T.sets ? fmt(T.won/T.sets,3) : "") + "</td><td></td><td>" + (T.sets ? fmt(T.pts/T.sets,2) : "") + "</td><td>" + T.jolly + "</td><td>" + T.tot + "</td></tr></tfoot></table></div>"
+    + '<p class="mute">Pozicija je rang po številu dobljenih setov. Tot + obisk = dobljeni seti + obiski. Klik na naslov stolpca razvrsti tabelo.</p></section>';
+}
+
+/* ---------- soigralci ---------- */
+function pairKey(a,b){ return a < b ? a + "|" + b : b + "|" + a; }
+function pairStats(){
+  var P = {};
+  db.matches.forEach(function(m){
+    var v = validSets(m), names = Object.keys(m.players);
+    for (var i = 0; i < names.length; i++) for (var j = i + 1; j < names.length; j++) {
+      var a = names[i], b = names[j], k = pairKey(a,b), pa = m.players[a], pb = m.players[b];
+      var s = P[k] || (P[k] = { a: a < b ? a : b, b: a < b ? b : a, with: 0, sets: 0, won: 0, vs: 0 });
+      // Po setih: skupaj v ekipi ali drug proti drugemu (menjave med tekmo so upoštevane).
+      var tog = false, opp = false;
+      v.forEach(function(x, si){
+        var ta = teamAt(pa, si), tb = teamAt(pb, si); if (!ta || !tb) return;
+        if (ta === tb) { tog = true; s.sets++; var mine = ta === "A" ? 0 : 1; if (+x[mine] > +x[1-mine]) s.won++; }
+        else opp = true;
+      });
+      if (tog) s.with++;
+      if (opp) s.vs++;
+    }
+  });
+  return P;
+}
+var pairSel = "";
+function pct(won, sets){ return sets ? Math.round(100 * won / sets) + " %" : "–"; }
+function soigHTML(){
+  var P = pairStats(), all = Object.keys(P).map(function(k){ return P[k]; });
+  var played = {}; db.matches.forEach(function(m){ Object.keys(m.players).forEach(function(n){ played[n] = 1; }); });
+  var names = Object.keys(played).sort(function(a,b){ return a.localeCompare(b, "sl"); });
+  if (!names.length) return '<p class="notice">Ni še odigranih krogov.</p>';
+  if (names.indexOf(pairSel) < 0) pairSel = names[0];
+  var rows = all.filter(function(s){ return s.a === pairSel || s.b === pairSel; })
+    .map(function(s){ return { name: s.a === pairSel ? s.b : s.a, with: s.with, sets: s.sets, won: s.won, vs: s.vs }; })
+    .sort(function(x,y){ return y.with - x.with || y.won - x.won || x.name.localeCompare(y.name, "sl"); });
+  var maxW = rows.reduce(function(m,r){ return Math.max(m, r.with); }, 1);
+  var top = all.filter(function(s){ return s.with > 0; })
+    .sort(function(x,y){ return y.with - x.with || (y.won / (y.sets||1)) - (x.won / (x.sets||1)) || x.a.localeCompare(y.a, "sl"); }).slice(0, 10);
+  return '<section class="panel"><div class="head"><h2>S kom igra</h2><label class="f">Igralec<select id="pairSel">'
+    + names.map(function(n){ return '<option' + (n === pairSel ? " selected" : "") + ">" + esc(n) + "</option>"; }).join("") + "</select></label></div>"
+    + '<div class="cards mobile">' + rows.map(function(r){
+        return '<div class="card"><span></span><span class="nm">' + esc(r.name) + '</span><span class="big">' + r.with + "<small>skupaj</small></span>"
+          + '<span class="det">' + r.sets + " setov skupaj · " + r.won + " dobljenih (" + pct(r.won, r.sets) + ") · proti " + r.vs + "×</span></div>";
+      }).join("") + "</div>"
+    + '<div class="scroll desk"><table><thead><tr><th>Soigralec</th><th>Skupaj v ekipi (krogi)</th><th>Seti skupaj</th><th>Dobljeni skupaj</th><th>Uspešnost skupaj</th><th>Drug proti drugemu (krogi)</th></tr></thead><tbody>'
+    + rows.map(function(r){
+        return "<tr><td>" + esc(r.name) + "</td><td>" + r.with + '<span class="meter" aria-hidden="true"><i style="width:' + Math.round(100 * r.with / maxW) + '%"></i></span></td><td>'
+          + r.sets + "</td><td>" + r.won + "</td><td>" + pct(r.won, r.sets) + "</td><td>" + r.vs + "</td></tr>";
+      }).join("") + "</tbody></table></div></section>"
+    + '<section class="panel"><div class="head"><h2>Najpogostejši pari</h2><span class="mute">največkrat v isti ekipi</span></div>'
+    + '<div class="cards mobile">' + top.map(function(s){
+        return '<div class="card"><span></span><span class="nm">' + esc(s.a) + " + " + esc(s.b) + '</span><span class="big">' + s.with + "<small>skupaj</small></span>"
+          + '<span class="det">' + s.sets + " setov · uspešnost " + pct(s.won, s.sets) + "</span></div>";
+      }).join("") + "</div>"
+    + '<div class="scroll desk"><table><thead><tr><th>Par</th><th>Skupaj (krogi)</th><th>Seti skupaj</th><th>Uspešnost skupaj</th></tr></thead><tbody>'
+    + top.map(function(s){ return "<tr><td>" + esc(s.a) + " + " + esc(s.b) + "</td><td>" + s.with + "</td><td>" + s.sets + "</td><td>" + pct(s.won, s.sets) + "</td></tr>"; }).join("")
+    + "</tbody></table></div></section>";
+}
+
+/* ---------- predlog ekip ---------- */
+var suggestInfo = "";
+// Moč igralca 0–1: 70 % razmerje dobljenih setov, 30 % povprečje pik na set. Novinec ≈ 0,5.
+function ratings(){
+  var R = {};
+  db.matches.forEach(function(m){
+    var v = validSets(m);
+    Object.keys(m.players).forEach(function(n){
+      var r = R[n] || (R[n] = { sets: 0, won: 0, pts: 0 }), info = m.players[n];
+      v.forEach(function(x, i){ var t = teamAt(info, i); if (!t) return; var mine = t === "A" ? 0 : 1;
+        r.sets++; r.pts += +x[mine]; if (+x[mine] > +x[1-mine]) r.won++; });
+    });
+  });
+  Object.keys(R).forEach(function(n){
+    var r = R[n], ratio = (r.won + 1) / (r.sets + 2), avg = r.sets ? r.pts / r.sets : 22.5;
+    r.rating = 0.7 * ratio + 0.3 * Math.max(0, Math.min(1, (avg - 17.5) / 10));
+  });
+  return R;
+}
+// Predlog: čim bolj izenačeni ekipi (po razmerju dobljenih setov) in čim manj ponovljenih parov.
+function suggestTeams(){
+  var names = Object.keys(form.players), n = names.length;
+  if (n < 2) return toast("Najprej označi prisotne igralce (✓).", true);
+  var R = ratings(), P = pairStats(), rounds = Math.max(1, db.matches.length);
+  var rate = names.map(function(nm){ return R[nm] ? R[nm].rating : 0.5; });
+  var pc = names.map(function(a){ return names.map(function(b){ var s = P[pairKey(a,b)]; return a === b || !s ? 0 : s.with; }); });
+  var sizes = n % 2 ? [Math.ceil(n/2), Math.floor(n/2)] : [n/2];
+  // Vrstni red po moči: najboljša dva naj bosta v različnih ekipah, prav tako 3. in 4. itd. (kot izmenično izbiranje).
+  var order = names.map(function(_, i){ return i; }).sort(function(a,b){ return rate[b] - rate[a]; });
+  var rank = []; order.forEach(function(idx, pos){ rank[idx] = pos; });
+  var nTop = Math.ceil(n / 3);
+  function score(inA){
+    var sa = 0, sb = 0, ca = 0, cb = 0, pen = 0, topA = 0, topB = 0, tier = 0;
+    for (var i = 0; i < n; i++) {
+      if (inA[i]) { sa += rate[i]; ca++; } else { sb += rate[i]; cb++; }
+      if (rank[i] < nTop) { if (inA[i]) topA++; else topB++; }
+      for (var j = i + 1; j < n; j++) if (inA[i] === inA[j]) pen += pc[i][j];
+    }
+    for (var t = 0; t + 1 < n; t += 2) if (inA[order[t]] === inA[order[t+1]]) tier += 1 + (n - t) / n; // višji par šteje več
+    var diff = Math.abs(sa/ca - sb/cb);
+    return { diff: diff, topA: topA, topB: topB, s: diff * 100 + Math.abs(topA - topB) * 4 + tier * 1.5 + (pen / rounds) * 0.3, ma: sa/ca, mb: sb/cb };
+  }
+  var cands = [];
+  function consider(inA){ var c = 0; for (var i = 0; i < n; i++) c += inA[i]; if (sizes.indexOf(c) < 0) return; var r = score(inA); r.inA = inA.slice(); cands.push(r); }
+  if (n <= 16) {
+    for (var mask = 0; mask < (1 << (n - 1)); mask++) {           // prvi igralec je vedno v A (simetrija)
+      var inA = [1]; for (var i = 1; i < n; i++) inA.push((mask >> (i - 1)) & 1); consider(inA);
+    }
+  } else {
+    for (var t = 0; t < 20000; t++) {
+      var idx = names.map(function(_, i){ return i; }).sort(function(){ return Math.random() - .5; });
+      var arr = new Array(n).fill(0); idx.slice(0, Math.ceil(n/2)).forEach(function(i){ arr[i] = 1; }); consider(arr);
+    }
+  }
+  cands.sort(function(a,b){ return a.s - b.s; });
+  var good = cands.filter(function(c){ return c.s <= cands[0].s + 1.5; }).slice(0, 8);   // le skoraj enako dobri predlogi
+  var pick = good[Math.floor(Math.random() * good.length)];                              // naključno, da "znova" da drug predlog
+  if (Math.random() < .5) pick.inA = pick.inA.map(function(x){ return 1 - x; });
+  names.forEach(function(nm, i){ form.players[nm] = { t: pick.inA[i] ? "A" : "B", j: form.players[nm].j }; });
+  var flip = !pick.inA[0];
+  var ma = flip ? pick.mb : pick.ma, mb = flip ? pick.ma : pick.mb;
+  var ta = flip ? pick.topB : pick.topA, tb = flip ? pick.topA : pick.topB;
+  var tops = order.slice(0, nTop).map(function(i){ return esc(names[i]); }).join(", ");
+  suggestInfo = "Povprečna moč: <b>" + esc(form.teamA || "A") + " " + fmt(ma,2) + "</b> · <b>" + esc(form.teamB || "B") + " " + fmt(mb,2) + "</b>. "
+    + "Najmočnejši (" + tops + ") so razdeljeni " + ta + " : " + tb + ". "
+    + '<span class="mute">Moč = 70 % razmerje dobljenih setov + 30 % pike na set; novinec 0,50. Klikni znova za drug predlog ali popravi ročno.</span>';
+  render();
+}
+
+/* ---------- termini in prisotnost ---------- */
+var TARGET = 12, ODG = [["DA","Pridem","✓"],["MOGOCE","Ne vem še","?"],["NE","Ne pridem","✕"]];
+var selTer = "", ME_KEY = "odbojka-jaz", me = "", showAllTer = false, goChat = false;
+try { me = localStorage.getItem(ME_KEY) || ""; } catch (e) {}
+function addDays(d, n){ var x = new Date(d + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0,10); }
+function wedAfter(d){ var x = d; do { x = addDays(x, 1); } while (new Date(x + "T12:00:00Z").getUTCDay() !== 3); return x; }
+function isSkipped(d){ return (db.skipped || []).some(function(s){ return s.date === d; }); }
+// Redni termin je vsako sredo 20–23. Aktualen je prvi termin po zadnjem vnesenem krogu (preskoči tiste, ki odpadejo).
+function terminBase(){
+  var last = db.matches[db.matches.length - 1];
+  return last ? wedAfter(last.date) : wedAfter(addDays(db.today || today(), -1));
+}
+function activeTermin(){ var d = terminBase(), k = 0; while (isSkipped(d) && k++ < 52) d = addDays(d, 7); return d; }
+function upcomingTermini(){ var b = terminBase(), out = []; for (var i = 0; i < 5; i++) out.push(addDays(b, 7 * i)); return out; }
+var DNI = ["nedelja","ponedeljek","torek","sreda","četrtek","petek","sobota"];
+function counts(d){
+  var r = (db.rsvp || {})[d] || {}, c = { DA: [], MOGOCE: [], NE: [], none: [] };
+  db.players.forEach(function(p){ var o = r[p.name]; if (o) c[o].push(p.name); else if (p.active) c.none.push(p.name); });
+  return c;
+}
+function prisHTML(){
+  var list = upcomingTermini(), act = activeTermin();
+  if (list.indexOf(selTer) < 0) selTer = act;
+  var d = selTer, c = counts(d), da = c.DA.length, mog = c.MOGOCE.length, off = isSkipped(d);
+  var n = Math.max(TARGET, da + mog), ok = da >= TARGET;
+  var cells = ""; for (var i = 0; i < n; i++) cells += '<i class="' + (i < da ? "da" : i < da + mog ? "mog" : "") + (i === TARGET - 1 && n > TARGET ? " cap" : "") + '"></i>';
+  var past = d < (db.today || today());
+  var J = (db.rsvpJolly || {})[d] || {}, jol = c.DA.filter(function(n){ return J[n]; });
+  var N = (db.rsvpNote || {})[d] || {}, myAns = me ? ((db.rsvp[d] || {})[me] || "") : "";
+  var rsRows = db.players.filter(function(p){ return p.active || ((db.rsvp[d] || {})[p.name]); })
+    .sort(function(a,b){ return (b.name === me) - (a.name === me) || byName(a,b); })
+    .map(function(p){
+      var o = (db.rsvp[d] || {})[p.name] || "", nm = esc(p.name), dis = off ? " disabled" : "";
+      return '<div class="rs' + (p.name === me ? " me" : "") + (o ? " st-" + o : "") + '"><span class="n" title="' + nm + '">' + nm + (J[p.name] ? " 🍺" : "") + "</span>"
+        + (N[p.name] ? '<span class="note" title="' + esc(N[p.name]) + '">' + esc(N[p.name]) + "</span>" : "") + '<span class="rsb">'
+        + ODG.map(function(a){ return '<button data-rsvp="' + a[0] + '" data-who="' + nm + '" class="' + (o === a[0] ? "on-" + a[0] : "") + '" title="' + a[1] + '" aria-label="' + nm + ": " + a[1] + '"' + dis + ">" + a[2] + "</button>"; }).join("")
+        + '<button data-jolly-rsvp="1" data-who="' + nm + '" class="' + (J[p.name] ? "on-J" : "") + '" title="Jolly – poskrbim za pijačo" aria-label="' + nm + ': jolly, poskrbim za pijačo"' + dis + ">🍺</button>"
+        + "</span></div>";
+    }).join("");
+  var grp = function(t, arr){ return "<div><b>" + t + " (" + arr.length + ")</b>" + (arr.length ? arr.map(function(n){ return esc(n) + (J[n] ? " 🍺" : "") + (N[n] ? ' <i class="mute">(' + esc(N[n]) + ")</i>" : ""); }).join(", ") : '<span class="mute">—</span>') + "</div>"; };
+  var noteBox = !me ? "" : !myAns
+    ? '<p class="hint" style="margin:0 0 8px">' + esc(me) + ", izberi odgovor, potem lahko dodaš še opombo.</p>"
+    : '<form class="notebox" id="noteF"><label class="f" for="noteIn">Tvoja opomba (' + esc(me) + '), vidijo jo vsi</label><div class="row">'
+      + '<input type="text" id="noteIn" maxlength="80" placeholder="npr. pridem ob 20.30" value="' + esc(noteDraft !== null ? noteDraft : (N[me] || "")) + '">'
+      + '<button class="btn sec">Shrani</button></div></form>';
+  return '<section class="panel"><div class="head"><h2>Termini</h2><span class="mute">vsako sredo 20.00–23.00</span></div><div class="termini' + (showAllTer ? " open" : "") + '">'
+    + list.map(function(t){ var cc = counts(t).DA.length;
+        return '<button class="chip' + (isSkipped(t) ? " off" : "") + (t !== act && t !== d ? " more" : "") + '" data-ter="' + t + '" aria-pressed="' + (t === d) + '">' + dateSl(t).replace(/ \d{4}$/, "") + '<span class="c">' + (isSkipped(t) ? "odpade" : cc + "/" + TARGET) + "</span></button>"; }).join("")
+    + '<button class="chip morebtn" data-act="moreter" aria-expanded="' + showAllTer + '">' + (showAllTer ? "Skrij ostale ▴" : "Ostali termini ▾") + "</button>"
+    + "</div></section>"
+    + '<div class="prisgrid"><div class="pcol">'
+    + '<section class="panel"><div class="head"><div><div class="when">' + DNI[new Date(d + "T12:00:00Z").getUTCDay()] + ", " + dateSl(d) + '</div><span class="mute">20.00–23.00'
+    + (d === act ? " · aktualni termin" : "") + (past && d === act ? " · rezultati še niso vneseni" : "") + "</span></div>"
+    + (canWrite ? '<button class="btn sec" data-skip="' + d + '"' + (busy ? " disabled" : "") + ">" + (off ? "Termin bo" : "Termin odpade") + "</button>" : "") + "</div>"
+    + (off ? '<p class="notice">Ta termin odpade.</p>' :
+        '<div class="meter12"><div class="gnum">' + da + "<small> / " + TARGET + '</small></div><div class="gauge' + (ok ? " ok" : "") + '" style="--n:' + n + '" role="img" aria-label="' + da + " od " + TARGET + ' prijavljenih">' + cells + "</div></div>"
+        + '<p class="status ' + (ok ? "ok" : "low") + '">' + (ok ? (da > TARGET ? "Igramo! Prijavljenih je " + (da - TARGET) + " več kot " + TARGET + "." : "Igramo! Ekipi sta polni.") : "Manjka še " + (TARGET - da) + " do " + TARGET + ".")
+        + (mog ? ' <span class="mute">' + mog + " še ne ve.</span>" : "") + "</p>"
+        + '<p class="mute" style="margin:4px 0 0">🍺 Za pijačo poskrbi: ' + (jol.length ? jol.map(esc).join(", ") : "še nihče") + "</p>")
+    + "</section>"
+    + (off ? "" : '<section class="panel"><div class="head"><h2>Tvoj odgovor</h2></div>'
+        + (!helpSeen && !me ? '<div class="banner"><div class="bh"><b>Prvič tukaj?</b><button class="btn link" data-act="hidebanner" aria-label="Skrij">✕</button></div>'
+          + 'Poišči svoje ime in klikni <b>✓</b>, če prideš. Več razlage dobiš pod gumbom <button class="qbtn qinline" data-act="help" aria-label="Pomoč">?</button> zgoraj.'
+          + '<div><button class="btn link bok" data-act="hidebanner">Razumem</button></div></div>' : "")
+        + noteBox
+        + '<p class="legend">✓ pridem · ? ne vem še · ✕ ne pridem · 🍺 jolly – poskrbim za pijačo</p><div class="rsgrid">' + rsRows + "</div></section>"
+        + '<section class="panel"><div class="head"><h2>Povzetek</h2></div><div class="groups" style="margin-top:0">'
+        + grp("Pridejo", c.DA) + grp("Ne vejo še", c.MOGOCE) + grp("Ne pridejo", c.NE) + grp("Brez odgovora", c.none) + "</div></section>")
+    + '</div><div class="pcol chatcol">' + chatHTML(d) + "</div></div>";
+}
+
+/* ---------- klepet ---------- */
+var chatDraft = "", noteDraft = null, CHAT_POLL_MS = 30000;
+function timeSl(t){ var m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2})/.exec(t || ""); return m ? +m[3] + ". " + +m[2] + ". " + m[4] : esc(t || ""); }
+function chatHTML(d){
+  var msgs = (db.chat || {})[d] || [];
+  var opts = '<option value="">Kdo si?</option>' + db.players.filter(function(p){ return p.active || p.name === me; }).sort(byName)
+    .map(function(p){ return '<option' + (p.name === me ? " selected" : "") + ">" + esc(p.name) + "</option>"; }).join("");
+  return '<section class="panel chat"><div class="head"><h2>Klepet</h2><span class="mute">termin ' + dateSl(d).replace(/ \d{4}$/, "") + "</span></div>"
+    + '<div class="msgs" id="msgs">' + (msgs.length ? msgs.map(function(m){
+        return '<div class="msg' + (m.name === me ? " mine" : "") + '"><div class="mh"><b>' + esc(m.name) + "</b> <span>" + timeSl(m.time) + "</span>"
+          + (canWrite ? '<button class="btn link" data-delchat="' + esc(m.id) + '" aria-label="Izbriši sporočilo" title="Izbriši">✕</button>' : "")
+          + '</div><div class="mt">' + esc(m.text) + "</div></div>";
+      }).join("") : '<p class="mute" style="margin:0">Še ni sporočil. Napiši prvo, npr. kdo prinese žogo.</p>') + "</div>"
+    + '<form class="composer" id="chatF"><select id="meSel" aria-label="Pišeš kot">' + opts + "</select>"
+    + '<div class="row"><input type="text" id="chatIn" maxlength="300" placeholder="Napiši sporočilo …" value="' + esc(chatDraft) + '" autocomplete="off">'
+    + '<button class="btn">Pošlji</button></div></form>'
+    + '<p class="mute" style="margin:6px 0 0">Nova sporočila se prikažejo samodejno vsakih 30 sekund.</p></section>';
+}
+/* ---------- domov ---------- */
+// Slovenske oblike: 1 krog, 2 kroga, 3–4 krogi, 5+ krogov (enako za 101, 102 …).
+function pl(n, f){ var x = n % 100; return n + " " + (x === 1 ? f[0] : x === 2 ? f[1] : x === 3 || x === 4 ? f[2] : f[3]); }
+var KROG = ["krog","kroga","krogi","krogov"], SET = ["set","seta","seti","setov"], OBISK = ["obisk","obiska","obiski","obiskov"], TOCKA = ["točka","točki","točke","točk"];
+function winnerOf(m){ var wa = m.sets.filter(function(s){ return s[0] > s[1]; }).length; return wa * 2 > m.sets.length ? "A" : wa * 2 < m.sets.length ? "B" : ""; }
+function namesList(arr, max){ return arr.slice(0, max).map(esc).join(", ") + (arr.length > max ? " in še " + (arr.length - max) : ""); }
+function funFacts(){
+  var F = [], M = db.matches;
+  if (!M.length) return F;
+  // Najboljši par: najvišji delež dobljenih setov skupaj, vsaj 2 kroga v isti ekipi.
+  var P = pairStats(), pairs = Object.keys(P).map(function(k){ return P[k]; }).filter(function(s){ return s.with >= 2 && s.sets; })
+    .sort(function(a,b){ return b.won / b.sets - a.won / a.sets || b.sets - a.sets; });
+  if (pairs.length) {
+    var best = pairs[0], same = pairs.filter(function(s){ return s.won / s.sets === best.won / best.sets && s.sets === best.sets; }).length;
+    F.push(["🤝", "Najboljši par", esc(best.a) + " + " + esc(best.b), Math.round(100 * best.won / best.sets) + " % setov skupaj" + (same > 1 ? " · enako še " + (same - 1) : "")]);
+  }
+  // Niz zmag: največ zaporednih dobljenih krogov (odsotnost niza ne prekine).
+  var cur = {}, mx = {};
+  M.forEach(function(m){ var w = winnerOf(m);
+    // Zmaga šteje ekipi, v kateri je igralec končal tekmo (po menjavah).
+    Object.keys(m.players).forEach(function(n){ if (w && teamAt(m.players[n], m.sets.length - 1) === w) { cur[n] = (cur[n] || 0) + 1; mx[n] = Math.max(mx[n] || 0, cur[n]); } else cur[n] = 0; }); });
+  var top = Math.max.apply(null, [0].concat(Object.keys(mx).map(function(n){ return mx[n]; })));
+  if (top >= 2) F.push(["🔥", "Niz zmag", namesList(Object.keys(mx).filter(function(n){ return mx[n] === top; }).sort(), 3), pl(top, KROG) + " zapored"]);
+  // Kralj jollyja.
+  var jc = {}; M.forEach(function(m){ Object.keys(m.players).forEach(function(n){ if (m.players[n].j) jc[n] = (jc[n] || 0) + 1; }); });
+  var jm = Math.max.apply(null, [0].concat(Object.keys(jc).map(function(n){ return jc[n]; })));
+  if (jm) F.push(["🍺", "Kralj jollyja", namesList(Object.keys(jc).filter(function(n){ return jc[n] === jm; }).sort(), 3), (jm === 1 ? "enkrat" : jm === 2 ? "dvakrat" : jm + "-krat") + " poskrbel za pijačo"]);
+  // Najzvestejši: največ obiskov.
+  var vis = {}; M.forEach(function(m){ Object.keys(m.players).forEach(function(n){ (vis[n] = vis[n] || {})[m.date] = 1; }); });
+  var vm = Math.max.apply(null, Object.keys(vis).map(function(n){ return Object.keys(vis[n]).length; }));
+  var vn = Object.keys(vis).filter(function(n){ return Object.keys(vis[n]).length === vm; }).sort();
+  if (vm > 1) F.push(["📅", "Najzvestejši", namesList(vn, 2), pl(vm, OBISK)]);
+  // Set z največ točkami in največja razlika.
+  var all = []; M.forEach(function(m){ m.sets.forEach(function(s){ all.push({ s: s, m: m, d: Math.abs(s[0] - s[1]) }); }); });
+  if (all.length) {
+    // Set z največ točkami (npr. 30 : 28 po podaljšani igri); pri enakem seštevku novejši.
+    var most = all.slice().sort(function(a,b){ return (b.s[0] + b.s[1]) - (a.s[0] + a.s[1]) || b.m.date.localeCompare(a.m.date); })[0];
+    var wide = all.slice().sort(function(a,b){ return b.d - a.d || b.m.date.localeCompare(a.m.date); })[0];
+    F.push(["🏐", "Set z največ točkami", most.s[0] + " : " + most.s[1] + " (" + pl(most.s[0] + most.s[1], TOCKA) + ")", esc(most.m.teamA) + " – " + esc(most.m.teamB) + ", " + dateSl(most.m.date).replace(/ \d{4}$/, "")]);
+    F.push(["💥", "Največja razlika", wide.s[0] + " : " + wide.s[1], esc(wide.m.teamA) + " – " + esc(wide.m.teamB) + ", " + dateSl(wide.m.date).replace(/ \d{4}$/, "")]);
+    var pts = all.reduce(function(t,x){ return t + x.s[0] + x.s[1]; }, 0);
+    F.push(["🔢", "Sezona skupaj", pl(M.length, KROG) + " · " + pl(all.length, SET), pl(pts, TOCKA)]);
+  }
+  return F;
+}
+// Forma: izid zadnjih n tekem igralca (najstarejša prva): W zmaga, L poraz, D neodločeno.
+function formOf(name, n){
+  var out = [];
+  db.matches.forEach(function(m){
+    var info = m.players[name]; if (!info) return;
+    var w = winnerOf(m), t = teamAt(info, validSets(m).length - 1);
+    out.push(!w || !t ? "D" : w === t ? "W" : "L");
+  });
+  return out.slice(-n);
+}
+function formHTML(name){
+  var f = formOf(name, 5); if (!f.length) return "";
+  var T = { W: "zmaga", L: "poraz", D: "neodločeno" };
+  return '<span class="form" aria-label="Zadnji krogi">' + f.map(function(x){ return '<i class="f' + x + '" title="' + T[x] + '"></i>'; }).join("") + "</span>";
+}
+// Prisotnost po odigranih terminih (zadnjih 12): koliko igralcev je bilo na tekmi.
+function attendHTML(){
+  var M = db.matches.slice(-12); if (M.length < 2) return "";
+  var cnt = M.map(function(m){ return Object.keys(m.players).length; }), mx = Math.max.apply(null, cnt.concat(TARGET));
+  return '<section class="panel hcard"><div class="lb">Prisotnost po terminih</div><div class="bars" style="--t:' + (TARGET / mx) + '">'
+    + M.map(function(m, i){ return '<div class="bc" title="' + dateSl(m.date) + ": " + pl(cnt[i], ["igralec","igralca","igralci","igralcev"]) + '"><span class="bn">' + cnt[i] + '</span><i class="' + (cnt[i] >= TARGET ? "ok" : "") + '" style="height:' + Math.round(100 * cnt[i] / mx) + '%"></i><span class="bd">' + dateSl(m.date).split(". ").slice(0, 2).join(".") + "</span></div>"; }).join("")
+    + '</div><div class="mute" style="font-size:11.5px">Zadnji termin: ' + cnt[cnt.length - 1] + " · črta = " + TARGET + "</div></section>";
+}
+function homeHTML(){
+  var act = activeTermin(), c = counts(act), da = c.DA.length, off = isSkipped(act), ok = da >= TARGET;
+  // Termini, ki so bili po zadnjem krogu odpovedani (aktualni termin jih preskoči).
+  var skippedNow = [], sd = terminBase(), sk = 0; while (sd !== act && sk++ < 52) { if (isSkipped(sd)) skippedNow.push(sd); sd = addDays(sd, 7); }
+  var offBar = skippedNow.length ? '<p class="offbar">⚠ Termin ' + skippedNow.map(function(d){ return dateSl(d).replace(/ \d{4}$/, ""); }).join(", ") + " odpade. Naslednji termin: " + dateSl(act).replace(/ \d{4}$/, "") + "</p>" : "";
+  // 1) Moj status: prijavljen igralec odgovori kar tukaj.
+  var myAns = me ? ((db.rsvp[act] || {})[me] || "") : "";
+  var mine = !me || off ? "" : '<section class="panel hcard mystat st-' + (myAns || "none") + '"><div class="lb">Tvoj odgovor · ' + esc(me) + "</div>"
+    + '<div class="hrow"><span class="status ' + (myAns === "DA" ? "ok" : "low") + '" style="margin:0">' + (myAns ? ({ DA: "✓ Prideš", MOGOCE: "? Še ne veš", NE: "✕ Ne prideš" })[myAns] : "Še nisi odgovoril") + "</span>"
+    + '<span class="rsb">' + ODG.map(function(a){ return '<button data-hrsvp="' + a[0] + '" class="' + (myAns === a[0] ? "on-" + a[0] : "") + '" title="' + a[1] + '" aria-label="' + a[1] + '">' + a[2] + "</button>"; }).join("") + "</span></div></section>";
+  // 2) Kdo pride in koga še čakamo.
+  var who = off ? "" : '<section class="panel hcard"><div class="lb">Kdo pride</div>'
+    + [["Pridejo", c.DA, "da"], ["Ne vejo še", c.MOGOCE, "mog"], ["Še niso odgovorili", c.none, "none"]].map(function(g){
+        return '<div class="wg ' + g[2] + '"><b>' + g[0] + " (" + g[1].length + ")</b> " + (g[1].length ? g[1].map(function(n){ return esc(n); }).join(", ") : '<span class="mute">—</span>') + "</div>"; }).join("")
+    + "</section>";
+  var msgs = ((db.chat || {})[act] || []).length, cells = "";
+  for (var i = 0; i < TARGET; i++) cells += '<i class="' + (i < da ? "da" : "") + '"></i>';
+  var next = '<section class="panel hcard"><div class="lb">Naslednja sreda</div>'
+    + '<div class="hrow"><span class="hbig">' + dateSl(act).replace(/ \d{4}$/, "") + ' · 20.00–23.00</span><span class="hnum">' + da + "<small> / " + TARGET + "</small></span></div>"
+    + '<div class="gauge mini' + (ok ? " ok" : "") + '" style="--n:' + TARGET + '" aria-hidden="true">' + cells + "</div>"
+    + '<div class="hrow"><span class="status ' + (ok ? "ok" : "low") + '" style="margin:0;font-size:13px">' + (ok ? "Igramo!" : "Manjka še " + (TARGET - da))
+    + (msgs ? ' · <span class="mute">' + msgs + (msgs === 1 ? " sporočilo" : msgs === 2 ? " sporočili" : msgs < 5 ? " sporočila" : " sporočil") + "</span>" : "") + "</span>"
+    + '<button class="btn" data-act="gopris">Prijavi se</button></div>'
+    + (function(){   // ekipe, ki jih je urednik že shranil za ta termin
+        var dm = (db.drafts || []).filter(function(m){ return m.date === act; })[0];
+        return dm ? '<div class="teams" style="margin-top:6px"><div class="A"><b class="tA">' + esc(dm.teamA) + "</b>: " + teamList(dm, "A", true)
+          + '</div><div class="B"><b class="tB">' + esc(dm.teamB) + "</b>: " + teamList(dm, "B", true) + "</div></div>" : "";
+      })()
+    + "</section>";
+  var lm = db.matches[db.matches.length - 1], last = "";
+  if (lm) {
+    var wa = lm.sets.filter(function(s){ return s[0] > s[1]; }).length;
+    last = '<section class="panel hcard"><div class="lb">Zadnji krog · ' + dateSl(lm.date).replace(/ \d{4}$/, "") + "</div>"
+      + '<div class="hrow hres"><span class="tA">' + esc(lm.teamA) + '</span><span class="hscore">' + wa + " : " + (lm.sets.length - wa) + '</span><span class="tB">' + esc(lm.teamB) + "</span></div>"
+      + '<div class="mute" style="text-align:center">' + lm.sets.map(function(s){ return s[0] + ":" + s[1]; }).join(" · ") + "</div>"
+      + (chList(lm).length ? '<div class="chline" style="text-align:center">🔁 ' + chList(lm).map(function(c){ return c.txt; }).join(" · ") + "</div>" : "") + "</section>";
+  }
+  var allRows = computeStats(true).sort(function(a,b){ return b.ratio - a.ratio || b.won - a.won || byName(a,b); }), rows = allRows.slice(0, 3);
+  var top = !rows.length ? "" : '<section class="panel hcard"><div class="lb">Vrh lestvice</div>'
+    + rows.map(function(r){ return '<div class="hrow"><span><span class="pill' + (r.pos === 1 ? " p1" : "") + '">' + r.pos + "</span> " + esc(r.name) + " " + formHTML(r.name) + "</span><span>" + fmt(r.ratio,3) + "</span></div>"; }).join("")
+    + '<button class="btn link hlink" data-tab="stat">Cela lestvica →</button></section>';
+  // 3) Moj položaj na lestvici.
+  var mr = me ? allRows.filter(function(r){ return r.name === me; })[0] : null, mypos = "";
+  if (mr) {
+    var higher = allRows.map(function(r){ return r.won; }).filter(function(w){ return w > mr.won; });
+    var gap = higher.length ? Math.min.apply(null, higher) - mr.won : 0;
+    mypos = '<section class="panel hcard"><div class="lb">Tvoj položaj · ' + esc(me) + "</div>"
+      + '<div class="hrow"><span><span class="pill' + (mr.pos === 1 ? " p1" : "") + '">' + mr.pos + "</span> mesto · " + pl(mr.won, SET) + " dobljenih · " + pl(mr.visits, OBISK) + "</span><span>" + fmt(mr.ratio,3) + "</span></div>"
+      + '<div class="hrow"><span class="mute">' + (gap ? "Do višjega mesta ti manjka " + pl(gap, SET) + "." : "Na vrhu si! 🏆") + "</span>" + formHTML(me) + "</div></section>";
+  }
+  var F = funFacts();
+  var fun = F.length ? '<section class="panel"><div class="lb">Zanimivosti</div><div class="fun">'
+    + F.map(function(f){ return '<div><div class="t"><span aria-hidden="true">' + f[0] + "</span>" + f[1] + '</div><div class="v">' + f[2] + '</div><div class="s">' + f[3] + "</div></div>"; }).join("")
+    + "</div></section>" : "";
+  return offBar + '<div class="homegrid"><div class="pcol">' + (off ? '<p class="notice">Termin ' + dateSl(act) + " odpade.</p>" : mine + next + who) + last + '</div><div class="pcol">' + top + mypos + attendHTML() + "</div></div>" + fun;
+}
+
+/* ---------- zgodovina prijav (samo urednik) ---------- */
+var logData = null, logLoading = false, logTer = "", logWho = "";
+function loadLog(){
+  logLoading = true; render();
+  google.script.run
+    .withSuccessHandler(function(rows){ logData = rows || []; logLoading = false; render(); })
+    .withFailureHandler(function(e){ logLoading = false; toast(errMsg(e), true); render(); })
+    .getLog(pw);
+}
+// Kdo je kliknil: "sam", ime drugega igralca (poudarjeno) ali "—" pri starejših zapisih.
+function byTxt(r){ return !r.by ? '<span class="mute">—</span>' : r.by === r.name ? '<span class="mute">sam</span>' : '<span class="byother">' + esc(r.by) + "</span>"; }
+function zgprHTML(){
+  if (logData === null) { if (!logLoading) setTimeout(loadLog, 0); return '<p class="notice">Nalagam zgodovino prijav …</p>'; }
+  var ters = logData.map(function(r){ return r.date; }).filter(function(v,i,a){ return a.indexOf(v) === i; }).sort().reverse();
+  var whos = logData.map(function(r){ return r.name; }).filter(function(v,i,a){ return a.indexOf(v) === i; }).sort(function(a,b){ return a.localeCompare(b, "sl"); });
+  var rows = logData.filter(function(r){ return (!logTer || r.date === logTer) && (!logWho || r.name === logWho); });
+  var hh = function(t){ return t.slice(11, 16); }, day = function(t){ return timeSl(t.slice(0, 16)); };
+  var filters = '<div class="row">'
+    + '<label class="f">Termin<select id="logTer"><option value="">Vsi termini</option>' + ters.map(function(t){ return '<option value="' + t + '"' + (t === logTer ? " selected" : "") + ">" + dateSl(t) + "</option>"; }).join("") + "</select></label>"
+    + '<label class="f">Igralec<select id="logWho"><option value="">Vsi igralci</option>' + whos.map(function(n){ return "<option" + (n === logWho ? " selected" : "") + ">" + esc(n) + "</option>"; }).join("") + "</select></label>"
+    + '<button class="btn sec" data-act="reloadlog"' + (logLoading ? " disabled" : "") + ">Osveži</button></div>";
+  // Računalnik: širok seznam.
+  var table = '<div class="scroll desk"><table class="logT"><thead><tr><th>Čas</th><th>Termin</th><th>Igralec</th><th>Sprememba</th><th>Prej</th><th>Zdaj</th><th>Vpisal</th></tr></thead><tbody>'
+    + rows.map(function(r){ return "<tr><td>" + day(r.time) + (r.time.length >= 19 ? ":" + r.time.slice(17, 19) : "") + "</td><td>" + dateSl(r.date) + "</td><td>" + esc(r.name) + "</td><td>" + esc(r.what) + '</td><td class="mute">' + esc(r.before) + "</td><td><b>" + esc(r.after) + "</b></td><td>" + byTxt(r) + "</td></tr>"; }).join("")
+    + "</tbody></table></div>";
+  // Telefon: po terminih, znotraj termina po igralcih, vsak s svojo časovnico.
+  var groups = ters.filter(function(t){ return !logTer || t === logTer; }).map(function(t){
+    var rt = rows.filter(function(r){ return r.date === t; }); if (!rt.length) return "";
+    var byWho = {}; rt.forEach(function(r){ (byWho[r.name] = byWho[r.name] || []).push(r); });
+    return '<div class="lgter"><h3>Sreda, ' + dateSl(t) + ' <span class="mute">' + rt.length + " sprememb</span></h3>"
+      + Object.keys(byWho).map(function(n){
+          var list = byWho[n], last = list[0];
+          return '<details class="lgp"><summary><b>' + esc(n) + '</b><span class="now">' + esc(last.after) + '</span><span class="mute">' + list.length + "×</span></summary><ol>"
+            + list.map(function(r){ return "<li><span class=\"mute\">" + day(r.time) + "</span> " + esc(r.before) + " → <b>" + esc(r.after) + "</b>" + (r.by && r.by !== r.name ? ' <span class="byother">vpisal ' + esc(r.by) + "</span>" : "") + "</li>"; }).join("") + "</ol></details>";
+        }).join("") + "</div>";
+  }).join("");
+  return '<section class="panel"><div class="head"><h2>Zgodovina prijav</h2><span class="mute">' + rows.length + " sprememb</span></div>" + filters
+    + (rows.length ? table + '<div class="mobile">' + groups + "</div>" : '<p class="notice">Ni zabeleženih sprememb za ta izbor.</p>') + "</section>";
+}
+
+/* ---------- potrditveno okno (alert/confirm v Googlovem okviru ne delujeta zanesljivo) ---------- */
+var confirmBox = null;
+function askConfirm(title, bodyHtml, yes, fn){ confirmBox = { title: title, body: bodyHtml, yes: yes, fn: fn }; render(); }
+function confirmHTML(){
+  return '<div class="modal" data-close="confirm"><div class="sheet confirm" role="alertdialog" aria-modal="true" aria-label="' + esc(confirmBox.title) + '">'
+    + "<h2>" + esc(confirmBox.title) + '</h2><div class="cbody">' + confirmBox.body + "</div>"
+    + '<div class="row cbtns"><button class="btn sec" data-act="cno">Prekliči</button><button class="btn" data-act="cyes">' + esc(confirmBox.yes) + "</button></div></div></div>";
+}
+
+/* ---------- kdo si (prepoznava igralca, ne urednik) ---------- */
+var whoOpen = false;
+function whoHTML(){
+  var list = db.players.filter(function(p){ return p.active || p.name === me; }).sort(byName);
+  return '<div class="modal"><div class="sheet" role="dialog" aria-modal="true" aria-label="Kdo si">'
+    + '<div class="head"><h2>Kdo si?</h2><button class="btn sec" data-act="closewho" aria-label="Zapri">✕</button></div>'
+    + '<p class="mute" style="margin:0 0 10px">Izberi svoje ime. Aplikacija si ga zapomni, tvoje ime bo na vrhu prijav in v klepetu.</p>'
+    + '<div class="wholist">' + list.map(function(p){ return '<button class="btn sec' + (p.name === me ? " on" : "") + '" data-iam="' + esc(p.name) + '">' + esc(p.name) + "</button>"; }).join("") + "</div>"
+    + (me ? '<button class="btn link" data-act="forgetme" style="margin-top:10px">Nisem ' + esc(me) + " (pozabi me)</button>" : "")
+    + "</div></div>";
+}
+
+/* ---------- pomoč ---------- */
+var helpOpen = false, HELP_KEY = "odbojka-pomoc-videna", helpSeen = false;
+try { helpSeen = localStorage.getItem(HELP_KEY) === "1"; } catch (e) {}
+function markHelpSeen(){ helpSeen = true; try { localStorage.setItem(HELP_KEY, "1"); } catch (e) {} }
+function helpHTML(){
+  var prijava = '<section><h3>Kako se prijavim</h3><ol>'
+    + "<li>Odpri zavihek <b>Prisotnost</b>.</li>"
+    + "<li>Poišči svoje ime in klikni:<div class=\"hl\">✓ pridem · ? ne vem še · ✕ ne pridem<br>🍺 pridem in poskrbim za pijačo (jolly)</div></li>"
+    + "<li>Premislil si se? Klikni drug gumb. Isti gumb še enkrat izbriše odgovor.</li>"
+    + "<li>Po želji dodaj opombo, npr. »pridem ob 20.30«, in klikni <b>Shrani</b>.</li>"
+    + "<li>V <b>klepetu</b> vprašaj ali sporoči kaj vsem.</li></ol>"
+    + '<p class="okline">Pri 12 prijavljenih se vrstica obarva zeleno: igramo.</p>'
+    + '<p class="mute">Ko se prvič odzoveš, se tvoje ime zapiše v naslov strani. <b>Shrani si stran med zaznamke ali na začetni zaslon</b>, pa te bo vedno prepoznala in tvoje ime bo na vrhu.</p></section>';
+  var lestvica = '<section><h3>Kaj pomeni lestvica</h3><dl>'
+    + "<dt>Total setov</dt><dd>koliko setov si odigral</dd>"
+    + "<dt>Sum vseh pik</dt><dd>vse točke tvoje ekipe v teh setih</dd>"
+    + "<dt>Dobljeni seti</dt><dd>koliko setov je tvoja ekipa dobila</dd>"
+    + "<dt>Obiski</dt><dd>na koliko sredah si igral</dd>"
+    + "<dt>Razmerje dob/odig</dt><dd>delež dobljenih setov: 0,667 pomeni 2 od 3</dd>"
+    + "<dt>Pozicija</dt><dd>mesto po številu dobljenih setov; z enakim številom si na istem mestu</dd>"
+    + "<dt>Avg / igran set</dt><dd>povprečno število točk tvoje ekipe na set</dd>"
+    + "<dt>Jolly</dt><dd>kolikokrat si poskrbel za pijačo</dd>"
+    + "<dt>Tot + obisk</dt><dd>dobljeni seti + obiski, zato šteje tudi redno prihajanje</dd></dl>"
+    + '<p class="mute">Klik na naslov stolpca razvrsti tabelo, na telefonu izbereš v polju <b>Razvrsti po</b>.</p></section>';
+  return '<div class="modal" data-act="closehelp"><div class="sheet" role="dialog" aria-modal="true" aria-label="Pomoč">'
+    + '<div class="head"><h2>Pomoč</h2><button class="btn sec" data-act="closehelp" aria-label="Zapri">✕</button></div>'
+    + (tab === "stat" ? lestvica + prijava : prijava + lestvica)
+    + '<button class="btn" data-act="closehelp" style="width:100%;margin-top:6px">Razumem</button></div></div>';
+}
+
+// Samo na telefonu: oznaka v glavi, ali ima aktualni termin sporočila v klepetu.
+function chatFlag(){
+  if (!loaded) return "";
+  var n = ((db.chat || {})[activeTermin()] || []).length;
+  return '<div class="chatflag-row">' + (n
+    ? '<button class="chatflag" data-act="gochat"><span class="bang" aria-hidden="true">!</span>Klepet: ' + n + (n === 1 ? " sporočilo" : n === 2 ? " sporočili" : n < 5 ? " sporočila" : " sporočil") + "</button>"
+    : '<span class="nochat">Ni aktualnega klepeta</span>') + "</div>";
+}
+// Googlov okvir na telefonih pogosto ne ohrani shrambe brskalnika, zato ime zapišemo tudi v naslov strani (?jaz=Ime).
+// Ko si tak naslov shraniš med zaznamke ali na začetni zaslon, te stran vedno prepozna.
+function setMe(n){
+  me = n; noteDraft = null;
+  try { if (n) localStorage.setItem(ME_KEY, n); else localStorage.removeItem(ME_KEY); } catch (e) {}
+  try { if (google.script.history) google.script.history.replace(null, n ? { tab: "prisotnost", jaz: n } : { tab: "prisotnost" }, ""); } catch (e) {}
+}
+function sendChat(){
+  var t = chatDraft.trim();
+  if (!me) return toast("Najprej izberi, kdo si.", true);
+  if (!t) return;
+  var d = selTer;
+  (db.chat[d] = db.chat[d] || []).push({ id: "tmp", name: me, text: t, time: "" });
+  chatDraft = ""; render();
+  var ci = $("#chatIn"); if (ci) ci.focus();
+  google.script.run
+    .withSuccessHandler(function(data){ fromServer(data); render(); var c = $("#chatIn"); if (c) c.focus(); })
+    .withFailureHandler(function(e){ toast(errMsg(e) || "Sporočila ni bilo mogoče poslati.", true); chatDraft = t; load(); })
+    .addChat(d, me, t);
+}
+function saveNote(){
+  var v = (noteDraft !== null ? noteDraft : "").trim(), d = selTer, who = me;
+  google.script.run
+    .withSuccessHandler(function(data){ noteDraft = null; fromServer(data); render(); toast(v ? "Opomba shranjena" : "Opomba odstranjena"); })
+    .withFailureHandler(function(e){ toast(errMsg(e), true); })
+    .setNote(d, who, v, me);
+}
+// Samodejno osveževanje, ko je odprt zavihek Prisotnost (Google ne pošilja sprememb sam).
+setInterval(function(){
+  if (!loaded || busy || document.hidden || tab !== "pris") return;
+  var ae = document.activeElement;
+  if (ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName) && ae.value && ae.id !== "chatIn") return;
+  google.script.run.withSuccessHandler(function(data){ fromServer(data); if (form.auto) newForm(); if (tab === "pris") render(); }).getData();
+}, CHAT_POLL_MS);
+// ans: DA / MOGOCE / NE; jollyClick: klik na 🍺 (vklopi jolly in s tem "pridem" ali ga izklopi)
+// Prvi odgovor brez vprašanja; vsaka sprememba obstoječega odgovora in vsak vklop jollyja zahteva potrditev.
+var ODG_IME = { DA: "Pridem", MOGOCE: "Ne vem še", NE: "Ne pridem" };
+function sendRsvp(who, ans, jollyClick){
+  var d = selTer, r = db.rsvp[d] || {}, J = db.rsvpJolly[d] || {}, o = r[who] || "";
+  var jolly, title, body;
+  if (jollyClick) { jolly = !J[who]; ans = "DA"; }
+  else { if (o === ans) ans = ""; jolly = ans === "DA" && !!J[who]; }   // ponoven klik odstrani odgovor
+  var stanje = function(a, j){ return a ? ODG_IME[a] + (a === "DA" && j ? " + jolly 🍺" : "") : "brez odgovora"; };
+  if (jollyClick && jolly) { title = "Prineseš pijačo? 🍺"; body = "S tem potrdiš, da prideš in poskrbiš za pijačo (jolly)."; }
+  else if (o) { title = ans ? "Spremeniš odgovor?" : "Izbrišeš odgovor?"; body = "<b>" + stanje(o, !!J[who]) + "</b> → <b>" + stanje(ans, jolly) + "</b>"; }
+  var other = me && me !== who;   // prijavljen si kot nekdo drug in klikaš za tega igralca
+  if (!title && other) { title = "Prijavljaš drugega igralca?"; body = "Za igralca <b>" + esc(who) + "</b> označuješ: <b>" + stanje(ans, jolly) + "</b>"; }
+  if (!title) return doRsvp(d, who, ans, jolly);
+  askConfirm(title, body + '<p class="who">' + (other
+      ? '<span class="warnline">Pozor: prijavljaš igralca <b>' + esc(who) + "</b>. Si prepričan?</span><br>Ti ostaneš: <b>" + esc(me) + "</b>"
+      : "Ti si: <b>" + esc(who) + "</b>") + "</p>",
+    ans ? "Da, potrdi" : "Da, izbriši", function(){ doRsvp(d, who, ans, jolly); });
+}
+function doRsvp(d, who, ans, jolly){
+  var r = db.rsvp[d] = db.rsvp[d] || {}, J = db.rsvpJolly[d] = db.rsvpJolly[d] || {};
+  if (ans) r[who] = ans; else delete r[who];
+  if (jolly) J[who] = true; else delete J[who];
+  if (!me) setMe(who);   // samo ob prvi prepoznavi; prijava za drugega ne spremeni, kdo si
+  if (!helpSeen) markHelpSeen();   // ko enkrat odgovori, pasice ne kažemo več
+  render();
+  google.script.run
+    .withSuccessHandler(function(data){ fromServer(data); if (form.auto) newForm(); render(); toast(!ans ? "Odgovor odstranjen" : jolly ? "Hvala, ti si jolly 🍺" : "Odgovor shranjen"); })
+    .withFailureHandler(function(e){ toast(errMsg(e) || "Odgovora ni bilo mogoče shraniti.", true); load(); })
+    .setRsvp(d, who, ans, jolly, me);   // me = kdo je kliknil (za zgodovino)
+}
+
+/* ---------- vnos ---------- */
+var form;
+function newForm(){
+  var last = db.matches[db.matches.length - 1];
+  suggestInfo = "";
+  var date = activeTermin(), pl = {}, r = (db.rsvp || {})[date] || {};
+  // Če so ekipe za aktualni termin že shranjene (brez rezultata), jih naloži, da vpišeš samo še sete.
+  var draft = (db.drafts || []).filter(function(m){ return m.date === date; })[0];
+  if (draft) {
+    form = JSON.parse(JSON.stringify(draft));
+    while (form.sets.length < 5) form.sets.push([0,0]);
+    form.draft = true; form.auto = false;
+    return;
+  }
+  var rj = (db.rsvpJolly || {})[date] || {};
+  db.players.forEach(function(p){ if (r[p.name] === "DA") pl[p.name] = { t: "P", j: !!rj[p.name] }; });   // prijavljeni = prisotni, jolly iz prijave
+  form = { id: "", date: date, teamA: last ? last.teamA : "", teamB: last ? last.teamB : "", players: pl, sets: [[0,0],[0,0],[0,0],[0,0],[0,0]], auto: true };
+}
+newForm();
+function sums(){
+  var v = validSets(form), wa = v.filter(function(s){ return +s[0] > +s[1]; }).length;
+  return { a: v.reduce(function(t,s){ return t + +s[0]; }, 0), b: v.reduce(function(t,s){ return t + +s[1]; }, 0),
+    res: v.length ? '<span class="tA">' + wa + '</span> : <span class="tB">' + (v.length - wa) + "</span>" : "" };
+}
+function vnosHTML(){
+  var ta = esc(form.teamA || "Ekipa A"), tb = esc(form.teamB || "Ekipa B");
+  var list = db.players.filter(function(p){ return p.active || form.players[p.name]; }).sort(byName);
+  var cnt = function(t){ return Object.keys(form.players).filter(function(n){ return form.players[n].t === t; }).length; };
+  var S = sums();
+  var isDraft = form.id && !validSets(form).length && (db.drafts || []).some(function(m){ return m.id === form.id; });
+  return '<section class="panel"><div class="head"><h2>' + (isDraft ? "Vpis rezultatov" : form.id ? "Urejanje tekme" : "Nova tekma") + '</h2>'
+    + (form.id && !form.draft ? '<button class="btn sec" data-act="cancel">Prekliči urejanje</button>' : "") + "</div>"
+    + (isDraft ? '<p class="suggest" style="margin:0 0 10px">Ekipe za ' + dateSl(form.date) + " so že shranjene. Vpiši rezultate setov in klikni <b>Shrani tekmo</b>. Ekipe lahko še spremeniš.</p>" : "")
+    + '<div class="row">'
+    + '<label class="f">Datum<input type="date" id="mDate" value="' + form.date + '"></label>'
+    + '<label class="f"><span class="tA">Ekipa A</span><input type="text" id="mTA" value="' + esc(form.teamA) + '" placeholder="npr. Debeli"></label>'
+    + '<label class="f"><span class="tB">Ekipa B</span><input type="text" id="mTB" value="' + esc(form.teamB) + '" placeholder="npr. Suhi"></label></div></section>'
+    + '<div class="grid2"><section class="panel"><div class="head"><h2>Igralci</h2>'
+    + '<button class="btn" data-act="suggest">' + (suggestInfo ? "Predlagaj znova" : "Predlagaj ekipe") + '</button></div>'
+    + (form.auto && cnt("P") ? '<p class="suggest" style="margin:0 0 10px">Za termin ' + dateSl(form.date) + " je prijavljenih " + cnt("P") + " igralcev in so že označeni s ✓. Kogar ni bilo, odstrani s –.</p>" : "")
+    + '<p class="hint" style="margin:0 0 10px">Označi prisotne s ✓ in klikni <b>Predlagaj ekipe</b>. Lahko pa jih razporediš ročno z A / B. J = jolly.</p><div class="plist">'
+    + list.map(function(p, k){
+        var i = form.players[p.name], t = i ? i.t : "", n = esc(p.name);
+        return '<div class="p ' + t + '"><span class="n">' + n + '</span><span class="seg">'
+          + '<button data-pick="' + n + '" data-t="" aria-label="Ne igra">–</button>'
+          + '<button data-pick="' + n + '" data-t="P" class="' + (t === "P" ? "onP" : "") + '" aria-label="Prisoten" title="Prisoten, ekipo predlaga aplikacija">✓</button>'
+          + '<button data-pick="' + n + '" data-t="A" class="' + (t === "A" ? "onA" : "") + '">A</button>'
+          + '<button data-pick="' + n + '" data-t="B" class="' + (t === "B" ? "onB" : "") + '">B</button></span>'
+          + '<label class="jolly"><input type="checkbox" id="j_' + k + '" data-jolly="' + n + '"' + (i && i.j ? " checked" : "") + (i ? "" : " disabled") + '>J</label></div>';
+      }).join("")
+    + '</div><div class="teams"><div class="A"><b class="tA">' + ta + "</b> (" + cnt("A") + "): " + (teamList(form,"A",true) || '<span class="mute">še nihče</span>')
+    + '</div><div class="B"><b class="tB">' + tb + "</b> (" + cnt("B") + "): " + (teamList(form,"B",true) || '<span class="mute">še nihče</span>') + "</div>"
+    + (cnt("P") ? '<div class="P"><b>Prisotni brez ekipe</b> (' + cnt("P") + "): " + teamList(form,"P") + "</div>" : "") + "</div>"
+    + chPanel()
+    + (suggestInfo ? '<div class="suggest">' + suggestInfo + "</div>" : "") + "</section>"
+    + '<section class="panel"><div class="head"><h2>Seti</h2><button class="btn sec" data-act="addset">+ set</button></div>'
+    + '<table class="setsT"><thead><tr><th>Set</th><th class="tA">' + ta + '</th><th></th><th class="tB">' + tb + "</th><th></th></tr></thead><tbody>"
+    + form.sets.map(function(s,i){
+        return "<tr><td>" + (i+1) + '.</td><td><input type="number" min="0" inputmode="numeric" id="s' + i + 'a" data-set="' + i + '" data-x="0" value="' + (s[0] || "") + '"></td><td>:</td>'
+          + '<td><input type="number" min="0" inputmode="numeric" id="s' + i + 'b" data-set="' + i + '" data-x="1" value="' + (s[1] || "") + '"></td><td><button class="btn link" data-rmset="' + i + '" aria-label="Odstrani set">✕</button></td></tr>';
+      }).join("")
+    + '</tbody><tfoot><tr><td>Σ</td><td id="sumA">' + S.a + '</td><td></td><td id="sumB">' + S.b + '</td><td></td></tr></tfoot></table>'
+    + '<div class="result" id="result">' + S.res + '</div>'
+    + '<div class="row" style="justify-content:flex-end"><button class="btn" data-act="save"' + (busy ? " disabled" : "") + ">" + (busy ? "Shranjujem…" : "Shrani tekmo") + "</button></div></section></div>";
+}
+/* ---------- menjave v vnosu ---------- */
+function setOpts(from, to, def, firstLabel){
+  var o = ""; for (var s = from; s <= to; s++) o += '<option value="' + s + '"' + (s === def ? " selected" : "") + ">" + (s === 1 && firstLabel ? firstLabel : "od " + s + ". seta") + "</option>";
+  return o;
+}
+function tName(t){ return esc(t === "A" ? (form.teamA || "Ekipa A") : (form.teamB || "Ekipa B")); }
+function addMove(n, s, t){
+  var i = form.players[n]; if (!i) return;
+  i.mv = (i.mv || []).filter(function(v){ return v.s !== s; });
+  i.mv.push({ s: s, t: t }); i.mv.sort(function(a,b){ return a.s - b.s; });
+  // odstrani premike, ki ekipe dejansko ne spremenijo
+  var cur = i.t; i.mv = i.mv.filter(function(v){ var keep = v.t !== cur; if (keep) cur = v.t; return keep; });
+  if (!i.mv.length) delete i.mv;
+}
+// Klik na – / ✓ / A / B. Ko je vpisan vsaj en set, premik v drugo ekipo ali kasnejši prihod gre prek okna.
+function pickPlayer(n, t){
+  form.auto = false;
+  var nSets = validSets(form).length, cur = form.players[n];
+  var inTeam = cur && (cur.t === "A" || cur.t === "B");
+  if (!nSets || t === "" || t === "P") {
+    if (t) form.players[n] = { t: t, j: cur ? cur.j : false }; else delete form.players[n];
+    return render();
+  }
+  if (!inTeam) {   // kasnejši prihod
+    askConfirm("Kdaj je prišel " + n + "?", "<b>" + esc(n) + "</b> gre v ekipo <b>" + tName(t) + "</b>."
+      + '<p><label class="f" for="laSet">Igral je</label><select id="laSet">' + setOpts(1, nSets + 1, nSets + 1, "od začetka (od 1. seta)") + "</select></p>",
+      "Potrdi", function(){
+        var s = +$("#laSet").value;
+        form.players[n] = { t: t, j: cur ? cur.j : false }; if (s > 1) form.players[n].from = s;
+        render();
+      });
+    return;
+  }
+  var now = teamAt(cur, Math.max(nSets - 1, 0)) || cur.t;   // ekipa v zadnjem vpisanem setu
+  if (now === t) return;
+  var cands = Object.keys(form.players).filter(function(x){ var i = form.players[x]; return x !== n && (i.t === "A" || i.t === "B") && (teamAt(i, Math.max(nSets - 1, 0)) || i.t) === t; }).sort(function(a,b){ return a.localeCompare(b, "sl"); });
+  askConfirm("Menjava igralca", "<b>" + esc(n) + "</b> (" + tName(now) + ") gre v ekipo <b>" + tName(t) + "</b>."
+    + '<p><label class="f" for="chSet">Od katerega seta?</label><select id="chSet">' + setOpts(2, nSets + 1, nSets + 1) + "</select></p>"
+    + '<p><label class="f" for="chWith">S kom zamenja?</label><select id="chWith">'
+    + cands.map(function(x, k){ return "<option" + (k === 0 ? " selected" : "") + ">" + esc(x) + "</option>"; }).join("")
+    + '<option value="">— samo premik, brez zamenjave —</option></select></p>',
+    "Potrdi menjavo", function(){
+      var s = +$("#chSet").value, w = $("#chWith").value;
+      addMove(n, s, t);
+      if (w) addMove(w, s, now);
+      toast(w ? n + " ↔ " + w + " od " + s + ". seta" : n + " v " + (t === "A" ? form.teamA : form.teamB) + " od " + s + ". seta");
+      render();
+    });
+}
+function removeCh(key){
+  var p = key.split("|"), kind = p[0], s = +p[1], n = p[2], n2 = p[3];
+  var drop = function(x){ var i = form.players[x]; if (!i || !i.mv) return; i.mv = i.mv.filter(function(v){ return v.s !== s; }); if (!i.mv.length) delete i.mv; };
+  if (kind === "from") { if (form.players[n]) delete form.players[n].from; }
+  else { drop(n); if (n2) drop(n2); }
+  render();
+}
+function chPanel(){
+  var L = chList(form);
+  if (!L.length) return validSets(form).length ? '<p class="hint">Menjava med tekmo: po vpisanem setu klikni A / B pri igralcu, ki gre v drugo ekipo.</p>' : "";
+  return '<div class="chbox"><b>🔁 Menjave</b>' + L.map(function(c){
+    var key = [c.kind, c.s, c.n, c.n2 || ""].map(function(x){ return esc(String(x)); }).join("|");
+    return '<div class="chrow"><span>' + c.txt + '</span><button class="btn link" data-rmch="' + key + '" aria-label="Prekliči menjavo">✕</button></div>';
+  }).join("") + "</div>";
+}
+
+function saveMatch(){
+  if (!form.date) return toast("Vnesi datum tekme.", true);
+  var v = validSets(form);   // brez setov = shranjene samo ekipe; rezultat vpišeš kasneje
+  var ts = Object.keys(form.players).map(function(k){ return form.players[k].t; });
+  if (ts.indexOf("P") >= 0) return toast("Nekateri prisotni še nimajo ekipe. Klikni Predlagaj ekipe ali jih razporedi z A / B.", true);
+  if (ts.indexOf("A") < 0 || ts.indexOf("B") < 0) return toast("Vsaka ekipa potrebuje vsaj enega igralca.", true);
+  var m = { id: form.id, date: form.date, teamA: form.teamA.trim() || "Ekipa A", teamB: form.teamB.trim() || "Ekipa B",
+    players: form.players, sets: v.map(function(s){ return [+s[0], +s[1]]; }) };
+  newForm();
+  if (v.length) call("saveMatch", [pw, toServer(m)], "Tekma shranjena", "stat");
+  else call("saveMatch", [pw, toServer(m)], "Ekipe shranjene, rezultat vpiši kasneje", "home");
+}
+
+/* ---------- krogi ---------- */
+var pendingDel = null;
+function zgodHTML(){
+  var ms = db.allMatches.slice().reverse();
+  return '<section class="panel"><div class="head"><h2>Odigrani krogi</h2><span class="mute">' + pl(db.matches.length, ["tekma","tekmi","tekme","tekem"])
+    + (db.drafts.length ? " · " + db.drafts.length + " brez rezultata" : "") + "</span></div>"
+    + (ms.length ? ms.map(function(m){
+      var wa = m.sets.filter(function(s){ return s[0] > s[1]; }).length, wb = m.sets.length - wa;
+      if (!m.sets.length) {   // shranjene ekipe brez rezultata
+        return '<div class="match"><div class="row" style="justify-content:space-between"><div><b>' + dateSl(m.date) + '</b> &nbsp; <span class="tA">' + esc(m.teamA) + '</span> <b class="mute">– : –</b> <span class="tB">' + esc(m.teamB) + '</span> <span class="pill">brez rezultata</span></div>'
+          + (canWrite ? '<div class="row"><button class="btn" data-edit="' + esc(m.id) + '">Vpiši rezultat</button>'
+            + (pendingDel === m.id ? '<button class="btn warn" data-del="' + esc(m.id) + '"' + (busy ? " disabled" : "") + '>Potrdi brisanje</button><button class="btn sec" data-act="nodel">Ne</button>'
+              : '<button class="btn link" data-askdel="' + esc(m.id) + '">Izbriši</button>') + "</div>" : "") + "</div>"
+          + '<div class="mute"><span class="tA">' + esc(m.teamA) + ":</span> " + teamList(m,"A",true) + '<br><span class="tB">' + esc(m.teamB) + ":</span> " + teamList(m,"B",true) + "</div></div>";
+      }
+      var tools = canWrite ? '<div class="row"><button class="btn sec" data-edit="' + esc(m.id) + '">Uredi</button>'
+        + (pendingDel === m.id ? '<button class="btn warn" data-del="' + esc(m.id) + '"' + (busy ? " disabled" : "") + '>Potrdi brisanje</button><button class="btn sec" data-act="nodel">Ne</button>'
+          : '<button class="btn link" data-askdel="' + esc(m.id) + '">Izbriši</button>') + "</div>" : "";
+      return '<div class="match"><div class="row" style="justify-content:space-between"><div><b>' + dateSl(m.date) + '</b> &nbsp; <span class="tA">' + esc(m.teamA) + "</span> <b>" + wa + " : " + wb + '</b> <span class="tB">' + esc(m.teamB) + "</span>"
+        + ' <span class="mute">(' + m.sets.map(function(s){ return s[0] + ":" + s[1]; }).join(", ") + ")</span></div>" + tools + "</div>"
+        + '<div class="mute"><span class="tA">' + esc(m.teamA) + ":</span> " + teamList(m,"A",true) + '<br><span class="tB">' + esc(m.teamB) + ":</span> " + teamList(m,"B",true) + "</div>"
+        + (chList(m).length ? '<div class="chline">🔁 ' + chList(m).map(function(c){ return c.txt; }).join(" · ") + "</div>" : "") + "</div>";
+    }).join("") : '<p class="notice">Ni še vpisanih tekem.</p>') + "</section>";
+}
+
+/* ---------- igralci ---------- */
+function igrHTML(){
+  var used = {}; db.allMatches.forEach(function(m){ Object.keys(m.players).forEach(function(k){ used[k] = 1; }); });
+  return (dirty ? '<div class="bar"><span>Spremembe seznama igralcev še niso shranjene.</span><button class="btn" data-act="saveplayers"' + (busy ? " disabled" : "") + ">" + (busy ? "Shranjujem…" : "Shrani spremembe") + "</button></div>" : "")
+    + '<section class="panel"><div class="head"><h2>Seznam igralcev</h2></div>'
+    + '<div class="row"><input type="text" id="newP" placeholder="Ime in priimek"><button class="btn" data-act="addp">Dodaj</button></div>'
+    + '<div class="scroll" style="margin-top:12px"><table class="ptab"><tbody>'
+    + db.players.map(function(p, k){ return { p: p, k: k }; }).sort(function(a,b){ return byName(a.p,b.p); }).map(function(o){
+        var p = o.p, k = o.k;
+        return '<tr><td class="pn"><input type="text" id="r_' + k + '" data-ren="' + k + '" value="' + esc(p.name) + '" aria-label="Ime igralca"></td>'
+          + '<td style="text-align:left"><label title="Aktiven: prikazan pri vnosu in prijavah"><input type="checkbox" id="a_' + k + '" data-active="' + k + '"' + (p.active ? " checked" : "") + '><span class="desk-txt"> aktiven</span></label></td>'
+          + "<td>" + (used[p.orig] ? '<span class="mute" title="Ima tekme, zato ga ni mogoče odstraniti"><span class="desk-txt">ima tekme</span><span class="mob-txt" aria-label="ima tekme">🏐</span></span>'
+              : '<button class="btn link" data-pdel="' + k + '" title="Odstrani igralca">' + '<span class="desk-txt">Odstrani</span><span class="mob-txt">✕</span></button>') + "</td>"
+          + "<td>" + (db.url && p.orig ? '<button class="btn sec plink" data-link="' + esc(p.orig) + '" title="Osebna povezava, ki igralca takoj prepozna"><span class="desk-txt">Osebna povezava</span><span class="mob-txt">link</span></button>' : "") + "</td></tr>";
+      }).join("") + '</tbody></table></div><p class="mute">Neaktivni igralci se ne pokažejo pri vnosu, njihova statistika ostane. Preimenovanje popravi ime tudi v vseh starih tekmah.</p></section>';
+}
+function savePlayers(){
+  var renames = {};
+  db.players.forEach(function(p){ if (p.orig && p.orig !== p.name) renames[p.orig] = p.name; });
+  call("savePlayers", [pw, db.players.map(function(p){ return { name: p.name, active: p.active }; }), renames], "Seznam igralcev shranjen", "igr");
+}
+
+/* ---------- tema (svetla / temna) ---------- */
+var THEME_KEY = "preserje-tema";
+function isDark(){ var t = document.documentElement.getAttribute("data-theme"); return t ? t === "dark" : !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
+function setTheme(t){ document.documentElement.setAttribute("data-theme", t); try { localStorage.setItem(THEME_KEY, t); } catch (e) {} }
+(function(){ var t = null; try { t = localStorage.getItem(THEME_KEY); } catch (e) {} if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); })();
+
+/* ---------- izris ---------- */
+function render(){
+  if (!canWrite && (tab === "vnos" || tab === "igr" || tab === "zgpr")) tab = "stat";
+  var tabs = [["home","Domov"],["stat","Lestvica"],["pris","Prisotnost"],["zgod","Krogi"],["soig","Soigralci"]];
+  if (canWrite) tabs.push(["vnos","Nov vnos"], ["igr","Igralci"], ["zgpr","Zgodovina prijav"]);
+  var last = db.matches[db.matches.length - 1];
+  var focusId = document.activeElement && document.activeElement.id;
+  var content;
+  if (loadErr) content = '<p class="notice">Podatkov ni bilo mogoče naložiti: ' + esc(loadErr) + '</p>';
+  else if (!loaded) content = '<p class="notice">Nalagam rezultate …</p>';
+  else content = tab === "stat" ? statHTML() : tab === "zgod" ? zgodHTML() : tab === "soig" ? soigHTML() : tab === "home" ? homeHTML() : tab === "pris" ? prisHTML() : tab === "zgpr" ? zgprHTML() : tab === "vnos" ? vnosHTML() : igrHTML();
+  var loginForm = showLogin && !canWrite ? '<form class="row" id="loginF"><input type="password" id="pwIn" placeholder="Geslo za vnos" autocomplete="current-password"><button class="btn">Prijava</button><button type="button" class="btn sec" data-act="nologin">Prekliči</button></form>' : "";
+  $("#app").innerHTML = '<header class="top"><div class="wrap"><div class="brand"><h1>Odbojka Preserje</h1>'
+    + '<span class="hbtns">' + (me
+        ? '<button class="mebtn" data-act="whoami" title="Nisi ti? Klikni in izberi svoje ime.">👤 ' + esc(me) + "</button>"
+        : '<span class="meunk">Neznan</span><button class="mebtn go" data-act="whoami">Prijavi se</button>')
+    + '<button class="qbtn" data-act="theme" aria-label="Zamenjaj temo" title="' + (isDark() ? 'Svetla tema' : 'Temna tema') + '">' + (isDark() ? '☀' : '☾') + '</button>'
+    + '<button class="qbtn" data-act="help" aria-label="Pomoč" title="Pomoč">?</button></span>'
+    + "</div>"
+    + '<div class="hrow2">' + chatFlag()
+    + (canWrite ? '<button class="login" data-act="logout">Odjava</button>' : showLogin ? "" : '<button class="login" data-act="showlogin">Vnos rezultatov</button>') + "</div>"
+    + loginForm
+    + '<nav role="tablist">' + tabs.map(function(t){ return '<button role="tab" data-tab="' + t[0] + '" aria-selected="' + (t[0] === tab) + '">' + t[1] + "</button>"; }).join("") + "</nav></div></header>"
+    + '<main class="wrap">' + content + '<p class="mute" style="text-align:center;margin:0">Različica ' + VERSION + "</p></main>"
+    + (helpOpen ? helpHTML() : "") + (whoOpen ? whoHTML() : "") + (confirmBox ? confirmHTML() : "");
+  var mm = $("#msgs"); if (mm) mm.scrollTop = mm.scrollHeight;   // zadnje sporočilo spodaj
+  if (goChat) { goChat = false; var ch = document.querySelector(".chat"); if (ch) ch.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  if (focusId) { var f = document.getElementById(focusId); if (f) f.focus({ preventScroll: true }); }
+  if (showLogin && !canWrite && !focusId) { var pi = $("#pwIn"); if (pi) pi.focus(); }
+}
+
+/* ---------- dogodki ---------- */
+document.addEventListener("submit", function(e){
+  if (e.target.id === "chatF") { e.preventDefault(); sendChat(); return; }
+  if (e.target.id === "noteF") { e.preventDefault(); saveNote(); return; }
+  if (e.target.id !== "loginF") return;
+  e.preventDefault();
+  var p = $("#pwIn").value; if (p) login(p);
+});
+document.addEventListener("click", function(e){
+  if (e.target.classList && e.target.classList.contains("modal")) {   // klik na temno ozadje
+    if (confirmBox) confirmBox = null; else if (whoOpen) whoOpen = false; else { helpOpen = false; markHelpSeen(); }
+    render(); return;
+  }
+  var b = e.target.closest("button"); if (!b || b.disabled) return;
+  var d = b.dataset;
+  if (d.pick !== undefined || d.rmset || d.act === "addset" || d.act === "suggest") form.auto = false;
+  if (d.tab) { tab = d.tab; pendingDel = null; if (tab === "zgpr") logData = null; render(); return; }
+  if (d.ter) { selTer = d.ter; noteDraft = null; render(); return; }
+  if (d.rsvp) { sendRsvp(d.who, d.rsvp); return; }
+  if (d.hrsvp) { selTer = activeTermin(); sendRsvp(me, d.hrsvp); return; }   // odgovor s Home strani
+  if (d.jollyRsvp) { sendRsvp(d.who, "DA", true); return; }
+  if (d.iam) { setMe(d.iam); whoOpen = false; markHelpSeen(); toast("Živjo, " + d.iam + "!"); render(); return; }
+  if (d.link) {
+    var url = db.url + "?tab=prisotnost&jaz=" + encodeURIComponent(d.link);
+    var show = function(){ askConfirm("Osebna povezava", "Pošlji jo igralcu <b>" + esc(d.link) + "</b>. Ko jo odpre, ga stran takoj prepozna.<p><input type=\"text\" id=\"linkOut\" readonly value=\"" + esc(url) + "\" style=\"width:100%\"></p>", "Zapri", function(){ render(); });
+      setTimeout(function(){ var li = $("#linkOut"); if (li) li.select(); }, 0); };
+    try { navigator.clipboard.writeText(url).then(function(){ toast("Povezava za " + d.link + " je kopirana"); }, show); } catch (err) { show(); }
+    return;
+  }
+  if (d.delchat) { call("deleteChat", [pw, d.delchat], "Sporočilo izbrisano", "pris"); return; }
+  if (d.skip) { call("setSkip", [pw, d.skip, !isSkipped(d.skip), ""], isSkipped(d.skip) ? "Termin je spet aktiven" : "Termin odpade", "pris"); return; }
+  if (d.sort) { if (d.sort === sortKey) sortDir *= -1; else { sortKey = d.sort; sortDir = (d.sort === "name" || d.sort === "pos") ? 1 : -1; } render(); return; }
+  if (d.pick !== undefined) { pickPlayer(d.pick, d.t); return; }
+  if (d.rmch) { removeCh(d.rmch); return; }
+  if (d.rmset) { form.sets.splice(+d.rmset, 1); render(); return; }
+  if (d.edit) { form = JSON.parse(JSON.stringify(db.allMatches.filter(function(m){ return m.id === d.edit; })[0])); while (form.sets.length < (form.sets.length ? 3 : 5)) form.sets.push([0,0]); tab = "vnos"; render(); return; }
+  if (d.askdel) { pendingDel = d.askdel; render(); return; }
+  if (d.del) { pendingDel = null; call("deleteMatch", [pw, d.del], "Tekma izbrisana", "zgod"); return; }
+  if (d.pdel) { db.players.splice(+d.pdel, 1); dirty = true; render(); return; }
+  switch (d.act) {
+    case "gopris": tab = "pris"; selTer = activeTermin(); render(); window.scrollTo(0, 0); break;
+    case "reloadlog": loadLog(); break;
+    case "cyes": var cf = confirmBox.fn; confirmBox = null; cf(); break;
+    case "cno": confirmBox = null; render(); break;
+    case "whoami": whoOpen = true; render(); break;
+    case "closewho": whoOpen = false; render(); break;
+    case "forgetme": setMe(""); whoOpen = false; toast("Aplikacija te ne prepozna več"); render(); break;
+    case "help": helpOpen = true; render(); break;
+    case "theme": setTheme(isDark() ? "light" : "dark"); render(); break;
+    case "closehelp": helpOpen = false; markHelpSeen(); render(); break;
+    case "hidebanner": markHelpSeen(); render(); break;
+    case "moreter": showAllTer = !showAllTer; render(); break;
+    case "gochat": tab = "pris"; selTer = activeTermin(); goChat = true; render(); break;
+    case "showlogin": showLogin = true; render(); break;
+    case "nologin": showLogin = false; render(); break;
+    case "logout": logout(); toast("Odjavljen"); render(); break;
+    case "fclr": fOd = fDo = ""; render(); break;
+    case "addset": form.sets.push([0,0]); render(); break;
+    case "cancel": newForm(); render(); break;
+    case "save": saveMatch(); break;
+    case "suggest": suggestTeams(); break;
+    case "nodel": pendingDel = null; render(); break;
+    case "addp":
+      var n = $("#newP").value.trim().replace(/,/g, " "); if (!n) return;
+      if (db.players.some(function(p){ return p.name.toLowerCase() === n.toLowerCase(); })) return toast("Igralec s tem imenom že obstaja.", true);
+      db.players.push({ name: n, active: true, orig: null }); dirty = true; render(); break;
+    case "saveplayers": savePlayers(); break;
+  }
+});
+document.addEventListener("input", function(e){
+  var t = e.target, d = t.dataset;
+  if (t.id === "chatIn") { chatDraft = t.value; return; }
+  if (t.id === "noteIn") { noteDraft = t.value; return; }
+  if (d.set !== undefined || t.id === "mTA" || t.id === "mTB") form.auto = false;
+  if (d.set !== undefined) {
+    form.sets[+d.set][+d.x] = +t.value || 0;
+    var S = sums(); $("#sumA").textContent = S.a; $("#sumB").textContent = S.b; $("#result").innerHTML = S.res; return;
+  }
+  if (t.id === "mTA") form.teamA = t.value;
+  if (t.id === "mTB") form.teamB = t.value;
+});
+document.addEventListener("change", function(e){
+  var t = e.target, d = t.dataset;
+  if (t.id === "logTer") { logTer = t.value; render(); }
+  else if (t.id === "logWho") { logWho = t.value; render(); }
+  else if (t.id === "meSel") { setMe(t.value); render(); }
+  else if (t.id === "pairSel") { pairSel = t.value; render(); }
+  else if (t.id === "sortSel") { sortKey = t.value; sortDir = (sortKey === "name" || sortKey === "pos") ? 1 : -1; render(); }
+  else if (t.id === "fOd") { fOd = t.value; render(); }
+  else if (t.id === "fDo") { fDo = t.value; render(); }
+  else if (t.id === "mDate") { form.date = t.value; form.auto = false; }
+  else if (t.id === "mTA" || t.id === "mTB") render();
+  else if (d.jolly !== undefined) form.players[d.jolly].j = t.checked;
+  else if (d.ren !== undefined) {
+    var n = t.value.trim().replace(/,/g, " "), p = db.players[+d.ren];
+    if (n && !db.players.some(function(q){ return q !== p && q.name.toLowerCase() === n.toLowerCase(); })) { p.name = n; dirty = true; }
+    else toast("Ime je prazno ali že obstaja.", true);
+    render();
+  }
+  else if (d.active !== undefined) { db.players[+d.active].active = t.checked; dirty = true; render(); }
+});
+document.addEventListener("keydown", function(e){ if (e.key === "Escape" && confirmBox) { confirmBox = null; render(); return; } if (e.key === "Escape" && whoOpen) { whoOpen = false; render(); return; } if (e.key === "Escape" && helpOpen) { helpOpen = false; markHelpSeen(); render(); return; } if (e.key === "Enter" && e.target.id === "newP") { var b = document.querySelector('[data-act="addp"]'); if (b) b.click(); } });
+
+var INIT = null;   // podatki, ki jih strežnik vgradi ob odprtju strani (null = naloži posebej)
+if (INIT) { try { fromServer(INIT); newForm(); } catch (e) { INIT = null; } }
+render();
+if (!INIT) load();
+// Povezava ...exec?tab=prisotnost ali ...exec#prisotnost odpre neposredno prijave.
+if (google.script.url) google.script.url.getLocation(function(l){
+  var p = (l && l.parameter && (l.parameter.tab || l.parameter.t)) || "", h = (l && l.hash) || "";
+  var jaz = l && l.parameter && l.parameter.jaz;
+  if (jaz) { me = jaz; try { localStorage.setItem(ME_KEY, jaz); } catch (e) {} }   // osebna povezava
+  else if (me) setMe(me);                                                           // ime iz shrambe prepiši v naslov
+  if (/prisot|prijav/i.test(p + h) || jaz) tab = "pris";
+  render();
+});
+if (pw) google.script.run.withSuccessHandler(function(ok){ if (ok) { canWrite = true; render(); } else logout(); }).checkPassword(pw);
+})();
+</script>
+</body>
+</html>
