@@ -376,7 +376,7 @@ var SB_KEY = "sb_publishable_3LbLU_oihWbsH9R_SRg5OA_ei0ij0kI";
 (function(){
 "use strict";
 var PW_KEY = "odbojka-geslo";
-var VERSION = "S3 (lestvica po poziciji)"; // ob vsaki spremembi povečaj, da vidiš, ali je objavljena nova koda
+var VERSION = "S5 (video v pomoči)"; // ob vsaki spremembi povečaj, da vidiš, ali je objavljena nova koda
 var db = { players: [], matches: [], allMatches: [], drafts: [], rsvp: {}, rsvpJolly: {}, rsvpNote: {}, chat: {}, skipped: [] }, loaded = false, loadErr = "";
 var pw = null, canWrite = false, busy = false, dirty = false, showLogin = false;
 var tab = "home";
@@ -903,7 +903,7 @@ function homeHTML(){
       + '<div class="mute" style="text-align:center">' + lm.sets.map(function(s){ return s[0] + ":" + s[1]; }).join(" · ") + "</div>"
       + (chList(lm).length ? '<div class="chline" style="text-align:center">🔁 ' + chList(lm).map(function(c){ return c.txt; }).join(" · ") + "</div>" : "") + "</section>";
   }
-  var allRows = computeStats(true).sort(function(a,b){ return b.ratio - a.ratio || b.won - a.won || byName(a,b); }), rows = allRows.slice(0, 3);
+  var allRows = computeStats(true).sort(function(a,b){ return a.pos - b.pos || b.ratio - a.ratio || byName(a,b); }), rows = allRows.slice(0, 3);
   var top = !rows.length ? "" : '<section class="panel hcard"><div class="lb">Vrh lestvice</div>'
     + rows.map(function(r){ return '<div class="hrow"><span><span class="pill' + (r.pos === 1 ? " p1" : "") + '">' + r.pos + "</span> " + esc(r.name) + " " + formHTML(r.name) + "</span><span>" + fmt(r.ratio,3) + "</span></div>"; }).join("")
     + '<button class="btn link hlink" data-tab="stat">Cela lestvica →</button></section>';
@@ -1003,6 +1003,12 @@ function installHTML(){
       : '<p style="margin:0">V meniju brskalnika (⋮) izberi <b>Namesti aplikacijo</b> ali <b>Dodaj na začetni zaslon</b>.</p>')
     + "</section>";
 }
+// Kratek video vodič (datoteka odbojka-vodic.mp4 leži ob index.html); naloži se šele, ko pritisneš predvajaj.
+function videoHTML(){
+  return '<section><h3>Video vodič</h3><p class="mute" style="margin:0 0 8px">Kaj aplikacija omogoča in kako jo namestiš na telefon (okoli 1,5 minute).</p>'
+    + '<video controls playsinline preload="none" poster="icons/icon-512.png" src="odbojka-vodic.mp4" style="width:100%;max-height:62vh;border-radius:10px;background:#0f1a14"></video>'
+    + '<p class="mute" style="margin:6px 0 0;font-size:12.5px">Se ne predvaja? <a href="odbojka-vodic.mp4" target="_blank" rel="noopener">Odpri video v novem zavihku</a>.</p></section>';
+}
 function helpHTML(){
   var prijava = '<section><h3>Kako se prijavim</h3><ol>'
     + "<li>Odpri zavihek <b>Prisotnost</b>.</li>"
@@ -1025,7 +1031,7 @@ function helpHTML(){
     + '<p class="mute">Klik na naslov stolpca razvrsti tabelo, na telefonu izbereš v polju <b>Razvrsti po</b>.</p></section>';
   return '<div class="modal" data-act="closehelp"><div class="sheet" role="dialog" aria-modal="true" aria-label="Pomoč">'
     + '<div class="head"><h2>Pomoč</h2><button class="btn sec" data-act="closehelp" aria-label="Zapri">✕</button></div>'
-    + (tab === "stat" ? lestvica + prijava : prijava + lestvica) + installHTML()
+    + videoHTML() + (tab === "stat" ? lestvica + prijava : prijava + lestvica) + installHTML()
     + '<button class="btn" data-act="closehelp" style="width:100%;margin-top:6px">Razumem</button></div></div>';
 }
 
@@ -1066,7 +1072,7 @@ function saveNote(){
 }
 // Samodejno osveževanje, ko je odprt zavihek Prisotnost (Google ne pošilja sprememb sam).
 setInterval(function(){
-  if (!loaded || busy || document.hidden || tab !== "pris") return;
+  if (!loaded || busy || document.hidden || tab !== "pris" || helpOpen) return;   // ne prekinjaj videa v pomoči
   var ae = document.activeElement;
   if (ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName) && ae.value && ae.id !== "chatIn") return;
   google.script.run.withSuccessHandler(function(data){ fromServer(data); if (form.auto) newForm(); if (tab === "pris") render(); }).getData();
