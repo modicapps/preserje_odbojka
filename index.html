@@ -302,8 +302,8 @@ select{font:inherit;color:var(--ink);background:var(--surface);padding:6px 8px;b
 <div id="toast" class="toast" role="status"></div>
 <script>
 /* Povezava s Supabase. Zamenjaj oba podatka (Supabase -> Project Settings -> API); anon ključ je javen in je tak namenjen. */
-var SB_URL = "https://buclbyhlozjhdrxljekn.supabase.co/rest/v1/";
-var SB_KEY = "sb_secret_eA0OvhGb4kVf9vdBRITtUQ_F5ZRhP3W";
+var SB_URL = "https://buclbyhlozjhdrxljekn.supabase.co";
+var SB_KEY = "sb_publishable_3LbLU_oihWbsH9R_SRg5OA_ei0ij0kI";
 /* Spodaj je tanka plast, ki klice iz aplikacije (nekdanji google.script.run) pošilja v Supabase. Ostala koda je enaka kot pri Googlu. */
 (function(){
   function names(v){ return String(v || "").split(",").map(function(s){ return s.trim(); }).filter(Boolean); }
@@ -341,7 +341,9 @@ var SB_KEY = "sb_secret_eA0OvhGb4kVf9vdBRITtUQ_F5ZRhP3W";
     var d = API[fn]; if (!d) return Promise.reject(new Error("Neznana funkcija " + fn));
     var a = (d[3] ? d[3](args.slice()) : args), body = {};
     d[1].forEach(function(k, i){ body[k] = a[i] === undefined ? null : a[i]; });
-    return fetch(SB_URL + "/rest/v1/rpc/" + d[0], { method: "POST", headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body) })
+    var key = String(SB_KEY).trim(), headers = { "apikey": key, "Content-Type": "application/json" };
+    if (key.indexOf("eyJ") === 0) headers["Authorization"] = "Bearer " + key;   // stari anon ključ (JWT); novi sb_publishable_ ključ gre samo v apikey
+    return fetch(String(SB_URL).trim().replace(/\/+$/, "") + "/rest/v1/rpc/" + d[0], { method: "POST", headers: headers, body: JSON.stringify(body) })
       .catch(function(){ throw new Error("Ni povezave s strežnikom. Poskusi znova."); })
       .then(function(r){ return r.json().catch(function(){ return null; }).then(function(j){
         if (!r.ok) throw new Error((j && j.message) || "Napaka strežnika (" + r.status + ").");
