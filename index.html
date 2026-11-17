@@ -376,7 +376,8 @@ var SB_KEY = "sb_publishable_3LbLU_oihWbsH9R_SRg5OA_ei0ij0kI";
 (function(){
 "use strict";
 var PW_KEY = "odbojka-geslo";
-var VERSION = "S5 (video v pomoči)"; // ob vsaki spremembi povečaj, da vidiš, ali je objavljena nova koda
+var lastSig = "";
+var VERSION = "S6 (osvežitev Domov)"; // ob vsaki spremembi povečaj, da vidiš, ali je objavljena nova koda
 var db = { players: [], matches: [], allMatches: [], drafts: [], rsvp: {}, rsvpJolly: {}, rsvpNote: {}, chat: {}, skipped: [] }, loaded = false, loadErr = "";
 var pw = null, canWrite = false, busy = false, dirty = false, showLogin = false;
 var tab = "home";
@@ -1072,10 +1073,17 @@ function saveNote(){
 }
 // Samodejno osveževanje, ko je odprt zavihek Prisotnost (Google ne pošilja sprememb sam).
 setInterval(function(){
-  if (!loaded || busy || document.hidden || tab !== "pris" || helpOpen) return;   // ne prekinjaj videa v pomoči
+  if (!loaded || busy || document.hidden || (tab !== "pris" && tab !== "home") || helpOpen || whoOpen || confirmBox) return;   // ne prekinjaj videa v pomoči
   var ae = document.activeElement;
   if (ae && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName) && ae.value && ae.id !== "chatIn") return;
-  google.script.run.withSuccessHandler(function(data){ fromServer(data); if (form.auto) newForm(); if (tab === "pris") render(); }).getData();
+  var t0 = tab;
+  google.script.run.withSuccessHandler(function(data){
+    var sig = JSON.stringify(data), changed = sig !== lastSig; lastSig = sig;
+    if (busy || helpOpen || whoOpen || confirmBox) return;
+    fromServer(data); if (form.auto) newForm();
+    if (tab !== t0) return;
+    if (tab === "pris" || (tab === "home" && changed)) render();   // Domov: izris samo ob spremembi, da se ne zatrese med branjem
+  }).getData();
 }, CHAT_POLL_MS);
 // ans: DA / MOGOCE / NE; jollyClick: klik na 🍺 (vklopi jolly in s tem "pridem" ali ga izklopi)
 // Prvi odgovor brez vprašanja; vsaka sprememba obstoječega odgovora in vsak vklop jollyja zahteva potrditev.
